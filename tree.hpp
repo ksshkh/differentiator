@@ -10,9 +10,9 @@
 
 #include "errors.hpp"
 
-// #define DEBUG
+#define DEBUG
 
-typedef int TreeElem;
+typedef char* TreeElem;
 
 enum Side {
     LEFT,
@@ -26,6 +26,18 @@ enum Type {
     OP,
     VAR,
     NUM
+};
+
+enum Operations {
+    ADD = '+',
+    SUB = '-',
+    MUL = '*',
+    DIV = '/',
+    DEG = '^',
+};
+
+enum Vars {
+    X = 'x',
 };
 
 struct Node {
@@ -68,9 +80,9 @@ struct Tree {
 
 void TreeCtor(Tree* tree, int* code_error);
 
-Node* NodeCtor(TreeElem data, Node* left, Node* right, Node* parent, int* code_error);
+Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, int* code_error);
 
-void AddNewNode(Node* node, TreeElem data, Side side, int* code_error);
+void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error);
 
 void DotTreeDump(Tree* tree, int* code_error);
 
@@ -88,9 +100,15 @@ void PrintTree(Tree* tree, int* code_error);
 
 void PreorderPrinting(Node* node, FILE* stream, int* code_error);
 
+void InorderPrinting(Node* node, FILE* stream, int* code_error);
+
+void PostorderPrinting(Node* node, FILE* stream, int* code_error);
+
 void ReadTree(Tree* tree, int* code_error);
 
-Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error);
+int CountTree(Node* node, int* code_error);
+
+Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error);
 
 void GetTreeDepth(Tree* tree, int* code_error);
 

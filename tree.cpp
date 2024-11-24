@@ -1,14 +1,19 @@
 #include "tree.hpp"
 #include "utils.hpp"
 
-#define NODE_COLOR         "\"#C0261C\""
-#define NODE_BORDER_COLOR  "\"#FFBE20\""
-#define BACKGROUND_COLOR   "\"#4984F9\""
+#define NODE_NUM_COLOR     "\"#FAAA82\""
+#define NODE_VAR_COLOR     "\"#A24892\""
+#define NODE_OP_COLOR      "\"#E07082\""
+#define NODE_BORDER_COLOR  "\"#203D98\""
+#define BACKGROUND_COLOR   "\"#FFE7A5\""
 
 static const char* DOT_FILE_NAME       = "./debug/tree.dot";
 static const char* IMAGE_NAME          = "./debug/tree_image.svg";
 static const char* HTML_FILE_NAME      = "./debug/tree.html";
-static const char* AKINATOR_TREE_FILE  = "./akinator.txt";
+static const char* INPUT_FILE          = "./input.txt";
+
+#define OP_CHECK(data)  data == ADD || data == SUB || data == MUL || data == DIV || data == DEG
+#define VAR_CHECK(data) data == X
 
 void TreeCtor(Tree* tree, int* code_error) {
 
@@ -17,17 +22,20 @@ void TreeCtor(Tree* tree, int* code_error) {
     tree->depth = 0;
     tree->root = NULL;
 
-    tree->data_base = ReadInBuff(AKINATOR_TREE_FILE, &(tree->size_data_base), code_error);
+    fprintf(stderr, "here\n");
+    tree->data_base = ReadInBuff(INPUT_FILE, &(tree->size_data_base), code_error);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
+    fprintf(stderr, "here\n");
 
     GetTreeDepth(tree, code_error);
 }
 
-Node* NodeCtor(TreeElem data, Node* left, Node* right, Node* parent, int* code_error) {
+Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, int* code_error) {
 
     Node* new_node = (Node*)calloc(1, sizeof(Node));
     MY_ASSERT(new_node != NULL, PTR_ERROR);
 
+    new_node->type = type;
     new_node->data = data;
     new_node->left = left;
     new_node->right = right;
@@ -37,21 +45,21 @@ Node* NodeCtor(TreeElem data, Node* left, Node* right, Node* parent, int* code_e
 
 }
 
-void AddNewNode(Node* node, TreeElem data, Side side, int* code_error) {
+void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error) {
 
     MY_ASSERT(data != NULL, PTR_ERROR);
     MY_ASSERT(node != NULL, PTR_ERROR);
 
     switch(side) {
         case LEFT: {
-            Node* new_node = NodeCtor(data, node->left, NULL, node, code_error);
+            Node* new_node = NodeCtor(type, data, node->left, NULL, node, code_error);
             MY_ASSERT(new_node != NULL, PTR_ERROR);
 
             node->left = new_node;
             break;
         }
         case RIGHT: {
-            Node* new_node = NodeCtor(data, NULL, node->right, node, code_error);
+            Node* new_node = NodeCtor(type, data, NULL, node->right, node, code_error);
             MY_ASSERT(new_node != NULL, PTR_ERROR);
 
             node->right = new_node;
@@ -122,15 +130,27 @@ void DotTreeDump(Tree* tree, int* code_error) {
     else {
         fprintf(stderr, "file did not open\n");
     }
-    
+
 }
 
 void PrintNode(Node* node, FILE* stream) {
 
     if(!node) return;
 
-    fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_COLOR ", label = \"{indx: %p | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
-            node, node, node->data, node->parent, node->left, node->right);
+
+    if(node->type == NUM) {
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_NUM_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
+            node, node, node->type, node->data, node->parent, node->left, node->right);
+    }
+    else if(node->type == OP) {
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
+            node, node, node->type, node->data, node->parent, node->left, node->right);
+    }
+    else {
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_VAR_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
+            node, node, node->type, node->data, node->parent, node->left, node->right);
+    }
+
 
     if(node->left) {
         fprintf(stream, "\t\tnode%p -> node%p\n", node, node->left);
@@ -146,7 +166,7 @@ void PrintNode(Node* node, FILE* stream) {
 
 void GraphCreate(void) {
 
-    char command[] = "dot -Tsvg /home/ksenia/huawei/akinator/debug/tree.dot -o /home/ksenia/huawei/akinator/debug/tree_image.svg";
+    char command[] = "dot -Tsvg /home/ksenia/huawei/differentiator/debug/tree.dot -o /home/ksenia/huawei/differentiator/debug/tree_image.svg";
     system(command);
 }
 
@@ -169,7 +189,7 @@ void PrintTree(Tree* tree, int* code_error) {
 
     TREE_ASSERT(tree);
 
-    FILE* printout = fopen(AKINATOR_TREE_FILE, "w");
+    FILE* printout = fopen(INPUT_FILE, "w");
     MY_ASSERT(printout != NULL, FOPEN_ERROR);
 
     PreorderPrinting(tree->root, printout, code_error);
@@ -182,17 +202,51 @@ void PreorderPrinting(Node* node, FILE* stream, int* code_error) {
     MY_ASSERT(stream != NULL, FILE_ERROR);
 
     if(!node) {
-        fprintf(stream, " nil ");
         return;
     }
 
     fprintf(stream, "(");
-    fprintf(stream, "<%s>", node->data);
+    fprintf(stream, " %s ", node->data);
 
     PreorderPrinting(node->left, stream, code_error);
     PreorderPrinting(node->right, stream, code_error);
 
     fprintf(stream, ")");
+}
+
+void PostorderPrinting(Node* node, FILE* stream, int* code_error) {
+
+    MY_ASSERT(stream != NULL, FILE_ERROR);
+
+    if(!node) {
+        return;
+    }
+
+    fprintf(stream, "(");
+
+    PostorderPrinting(node->left, stream, code_error);
+    PostorderPrinting(node->right, stream, code_error);
+    fprintf(stream, " %s ", node->data);
+
+    fprintf(stream, ")");
+}
+
+void InorderPrinting(Node* node, FILE* stream, int* code_error) {
+
+    MY_ASSERT(stream != NULL, FILE_ERROR);
+
+    if(!node) {
+        return;
+    }
+
+    fprintf(stream, "(");
+
+    InorderPrinting(node->left, stream, code_error);
+    fprintf(stream, " %s ", node->data);
+    InorderPrinting(node->right, stream, code_error);
+
+    fprintf(stream, ")");
+
 }
 
 void ReadTree(Tree* tree, int* code_error) {
@@ -202,13 +256,112 @@ void ReadTree(Tree* tree, int* code_error) {
 
     char* copy_data_base = tree->data_base;
 
-    tree->root = ReadNode(tree, tree->root, NULL, code_error);
+    tree->root = ReadPreNode(tree, tree->root, NULL, code_error);
 
     tree->data_base = copy_data_base;
 
 }
 
-Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error) {
+
+
+int CountTree(Node* node, int* code_error) {
+
+    if(!node->left) {
+        return atoi(node->data);
+    }
+
+    int left_res = CountTree(node->left,  code_error);
+    int right_res = CountTree(node->right, code_error);
+
+    if(node->type == OP) {
+        int res = 0;
+        switch(*node->data) {
+            case ADD: {
+                res = left_res + right_res;
+                break;
+            }
+            case SUB: {
+                res = left_res - right_res;
+                break;
+            }
+            case MUL: {
+                res = left_res * right_res;
+                break;
+            }
+            case DIV: {
+                res = left_res / right_res;
+                break;
+            }
+            default:
+                break;
+        }
+        return res;
+    }
+}
+
+// Node* ReadInNode(Tree* tree, Node* node, Node* left, Node* right, int* code_error) {
+
+//     while(isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
+//         tree->data_base++;
+//     }
+
+//     if(*(tree->data_base) == ')') {
+//         return node;
+//     }
+
+//     while(isspace(*(tree->data_base)) || *(tree->data_base) == '(') {
+//         tree->data_base++;
+//     }
+
+//     char* data = tree->data_base;
+
+//     while(!isspace(*(tree->data_base))) {
+//         tree->data_base++;
+//     }
+
+//     *(tree->data_base) = '\0';
+
+//     Type type = DEFAULT;
+
+//     if(OP_CHECK(*data)) {
+//         type = OP;
+//     }
+//     else if(VAR_CHECK(*data)) {
+//         type = VAR;
+//     }
+//     else {
+//         type = NUM;
+//     }
+
+
+//     node = NodeCtor(type, data, NULL, NULL, NULL, code_error);
+
+//     // if(node->type == NUM || node->type == VAR) {
+//     //     while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
+//     //         tree->data_base++;
+//     //     }
+//     //     return node;
+//     // }
+
+//     while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
+//         tree->data_base++;
+//     }
+
+//     Node* parent_node = ReadInNode(tree, node->parent, node, NULL, code_error);
+
+//     node->left = node;
+
+//     while(*(tree->data_base) == ')' || isspace(*(tree->data_base))) {
+//         tree->data_base++;
+//     }
+
+//     Node* right_node = ReadInNode(tree, node->parent, NULL, node, code_error);
+
+//     return node;
+
+// }
+
+Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error) {
 
     while(isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
         tree->data_base++;
@@ -218,32 +371,47 @@ Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error) {
         return node;
     }
 
-    if(!strncmp(tree->data_base, "nil", 3)) {
-        tree->data_base += 3;
-        return node;
-    }
-
-    while(*(tree->data_base) != '<') {
+    while(isspace(*(tree->data_base)) || *(tree->data_base) == '(') {
         tree->data_base++;
     }
 
-    char* data = ++(tree->data_base);
+    char* data = tree->data_base;
 
-    while(*(tree->data_base) != '>') {
+    while(!isspace(*(tree->data_base))) {
         tree->data_base++;
     }
 
     *(tree->data_base) = '\0';
 
-    node = NodeCtor(data, NULL, NULL, parent, code_error);
+    Type type = DEFAULT;
 
-    node->left = ReadNode(tree, node->left, node, code_error);
+    if(OP_CHECK(*data)) {
+        type = OP;
+    }
+    else if(VAR_CHECK(*data)) {
+        type = VAR;
+    }
+    else {
+        type = NUM;
+    }
+
+
+    node = NodeCtor(type, data, NULL, NULL, parent, code_error);
+
+    if(node->type == NUM || node->type == VAR) {
+        while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
+            tree->data_base++;
+        }
+        return node;
+    }
+
+    node->left = ReadPreNode(tree, node->left, node, code_error);
 
     while(*(tree->data_base) == ')' || isspace(*(tree->data_base))) {
         tree->data_base++;
     }
 
-    node->right = ReadNode(tree, node->right, node, code_error);
+    node->right = ReadPreNode(tree, node->right, node, code_error);
 
     return node;
 }
@@ -310,6 +478,7 @@ void GetTreeDepth(Tree* tree, int* code_error) {
 
 #endif
 
-#undef NODE_COLOR
+#undef NODE_NUM_COLOR
 #undef NODE_BORDER_COLOR
 #undef BACKGROUND_COLOR
+#undef OP_CHECK

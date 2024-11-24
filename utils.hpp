@@ -4,7 +4,7 @@
 #include "errors.hpp"
 #include "tree.hpp"
 
-long int count_size_file(FILE* program, int* code_error);
+long int CountSizeFile(FILE* program, int* code_error);
 
 char* ReadInBuff(const char* filename,  long int* stream_size, int* code_error);
 
