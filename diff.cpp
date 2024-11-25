@@ -28,6 +28,10 @@ TreeElem CountTree(Node* node, int* code_error) {
                 res = left_res / right_res;
                 break;
             }
+            case DEG: {
+                res = pow(left_res, right_res);
+                break;
+            }
             default:
                 break;
         }
@@ -53,8 +57,32 @@ Node* DiffTree(Node* node, int* code_error) {
                 case ADD: {
                     return _ADD(DiffTree(node->left, code_error), DiffTree(node->right, code_error));
                 }
+                case SUB: {
+                    return _SUB(DiffTree(node->left, code_error), DiffTree(node->right, code_error));
+                }
                 case MUL: {
-                    node->data = (double)ADD;
+                    Node* dL = DiffTree(node->left,  code_error);
+                    Node* dR = DiffTree(node->right, code_error);
+                    Node* cL = CopyTree(node->left,  node, code_error);
+                    Node* cR = CopyTree(node->right, node, code_error);
+
+                    return _ADD(_MUL(dL, cR), _MUL(cL, dR));
+                }
+                case DIV: {
+                    Node* dL = DiffTree(node->left,  code_error);
+                    Node* dR = DiffTree(node->right, code_error);
+                    Node* cL = CopyTree(node->left,  node, code_error);
+                    Node* cR1 = CopyTree(node->right, node, code_error);
+                    Node* cR2 = CopyTree(node->right, node, code_error);
+
+                    return _DIV(_SUB(_MUL(dL, cR1), _MUL(cL, dR)), _DEG(cR2, _NUM(2.0)));
+                }
+                case DEG: {
+                    if(node->right->type == NUM) {
+    
+                    }
+                }
+                default: {
                     break;
                 }
             }

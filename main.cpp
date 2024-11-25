@@ -11,14 +11,10 @@ int main(void) {
     DotTreeDump(&tree, &code_error);
     printf("%lf\n", CountTree(tree.root, &code_error));
     PrintTree(&tree, &code_error);
-    tree.root = DiffTree(tree.root, &code_error);
+    // tree.root = DiffTree(tree.root, &code_error);
+    TexTreeDump(&tree, &code_error);
     DotTreeDump(&tree, &code_error);
-    // TexTreeDump(&tree, &code_error);
-    // Tree copy_tree = {};
-    // copy_tree.root = CopyTree(tree.root, NULL, &code_error);
-    // DotTreeDump(&copy_tree, &code_error);
     TreeDtor(&tree, &code_error);
-    // TreeDtor(&copy_tree, &code_error);
 
     return 0;
 }

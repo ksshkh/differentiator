@@ -183,11 +183,11 @@ void PrintTexNode(Node* node, FILE* stream) {
     else if((int)node->data != DIV && (int)node->data != MUL) fprintf(stream, "%c", (int)node->data);
     else if((int)node->data == MUL) fprintf(stream, "\\cdot");
 
-    if((int)node->data == DIV) fprintf(stream, "{");
+    if((int)node->data == DIV || (int)node->data == DEG) fprintf(stream, "{");
 
     if(node->right) PrintTexNode(node->right, stream);
 
-    if((int)node->data == DIV) fprintf(stream, "}");
+    if((int)node->data == DIV || (int)node->data == DEG) fprintf(stream, "}");
 
 }
 
@@ -202,7 +202,7 @@ void TexTreeDump(Tree* tree, int* code_error) {
         fprintf(tex_file, "\\date{\\today}\n");
         fprintf(tex_file, "\\begin{document}\n");
         fprintf(tex_file, "\\maketitle\n");
-        fprintf(tex_file, "\\[f(x)=");
+        fprintf(tex_file, "\\[f^{(0)}(x)=");
 
         if(tree) {
             if(tree->root) {
@@ -210,6 +210,12 @@ void TexTreeDump(Tree* tree, int* code_error) {
 
                 fprintf(tex_file, "\\]\n");
                 fprintf(tex_file, "Function value at a point $x=%d$: \\[f(%d)=%.2lf\\]\n", X, X, CountTree(tree->root, code_error));
+
+                tree->root = DiffTree(tree->root, code_error);
+                fprintf(tex_file, "\\[f^{(1)}(x)=");
+                PrintTexNode(tree->root, tex_file);
+
+                fprintf(tex_file, "\\]\n");
             }
             else {
                 fprintf(stderr, "tree is empty\n");

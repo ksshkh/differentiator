@@ -1,6 +1,8 @@
 #ifndef DIFF_HPP
 #define DIFF_HPP
 
+#include <math.h>
+
 #include "tree.hpp"
 #include "dsl.hpp"
 
