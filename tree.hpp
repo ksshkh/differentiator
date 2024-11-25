@@ -14,7 +14,7 @@ static const char* INPUT_FILE = "./input.txt";
 
 #define DEBUG
 
-typedef char* TreeElem;
+typedef double TreeElem;
 
 enum Side {
     LEFT,
@@ -86,33 +86,11 @@ Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, 
 
 void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error);
 
-// void DotTreeDump(Tree* tree, int* code_error);
-
-// void TexTreeDump(Tree* tree, int* code_error);
-
 void TreeDtor(Tree* tree, int* code_error);
-
-// void PrintDotNode(Node* node, FILE* stream);
-
-// void PrintTexNode(Node* node, FILE* stream);
 
 void FreeNode(Node* node, int* code_error);
 
-// void GraphCreate(void);
-
-// void HtmlDump(int *code_error);
-
-// void PrintTree(Tree* tree, int* code_error);
-
-// void PreorderPrinting(Node* node, FILE* stream, int* code_error);
-
-// void InorderPrinting(Node* node, FILE* stream, int* code_error);
-
-// void PostorderPrinting(Node* node, FILE* stream, int* code_error);
-
 void ReadTree(Tree* tree, int* code_error);
-
-int CountTree(Node* node, int* code_error);
 
 Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error);
 

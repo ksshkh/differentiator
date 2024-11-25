@@ -55,16 +55,16 @@ void PrintDotNode(Node* node, FILE* stream) {
 
 
     if(node->type == NUM) {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_NUM_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_NUM_COLOR ", label = \"{indx: %p | type: %d | value: %.2lf | parent: %p | { left: %p | right: %p}}\"];\n",
             node, node, node->type, node->data, node->parent, node->left, node->right);
     }
     else if(node->type == OP) {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
-            node, node, node->type, node->data, node->parent, node->left, node->right);
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{indx: %p | type: %d | value: %c | parent: %p | { left: %p | right: %p}}\"];\n",
+            node, node, node->type, (int)node->data, node->parent, node->left, node->right);
     }
     else {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_VAR_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
-            node, node, node->type, node->data, node->parent, node->left, node->right);
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_VAR_COLOR ", label = \"{indx: %p | type: %d | value: %c | parent: %p | { left: %p | right: %p}}\"];\n",
+            node, node, node->type, (int)node->data, node->parent, node->left, node->right);
     }
 
 
@@ -122,7 +122,12 @@ void PreorderPrinting(Node* node, FILE* stream, int* code_error) {
     }
 
     fprintf(stream, "(");
-    fprintf(stream, " %s ", node->data);
+    if (node->type == NUM) {
+        fprintf(stream, " %.2lf ", node->data);
+    }
+    else {
+        fprintf(stream, " %c ", (int)node->data);
+    }
 
     PreorderPrinting(node->left, stream, code_error);
     PreorderPrinting(node->right, stream, code_error);
@@ -142,7 +147,7 @@ void PostorderPrinting(Node* node, FILE* stream, int* code_error) {
 
     PostorderPrinting(node->left, stream, code_error);
     PostorderPrinting(node->right, stream, code_error);
-    fprintf(stream, " %s ", node->data);
+    fprintf(stream, " %lf ", node->data);
 
     fprintf(stream, ")");
 }
@@ -158,7 +163,7 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
     fprintf(stream, "(");
 
     InorderPrinting(node->left, stream, code_error);
-    fprintf(stream, " %s ", node->data);
+    fprintf(stream, " %lf ", node->data);
     InorderPrinting(node->right, stream, code_error);
 
     fprintf(stream, ")");
@@ -167,20 +172,22 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
 
 void PrintTexNode(Node* node, FILE* stream) {
 
-    if(*node->data == DIV) fprintf(stream, "\\frac{");
+    if((int)node->data == DIV) fprintf(stream, "\\frac{");
 
     if(node->left) PrintTexNode(node->left,  stream);
 
-    if(*node->data == DIV) fprintf(stream, "}");
+    if((int)node->data == DIV) fprintf(stream, "}");
 
-    if(*node->data != DIV && *node->data != MUL) fprintf(stream, "%s", node->data);
-    if(*node->data == MUL) fprintf(stream, "\\cdot");
+    if(node->type == NUM) fprintf(stream, "%.2lf", node->data);
+    else if(node->type == VAR) fprintf(stream, "%c", (int)node->data);
+    else if((int)node->data != DIV && (int)node->data != MUL) fprintf(stream, "%c", (int)node->data);
+    else if((int)node->data == MUL) fprintf(stream, "\\cdot");
 
-    if(*node->data == DIV) fprintf(stream, "{");
+    if((int)node->data == DIV) fprintf(stream, "{");
 
     if(node->right) PrintTexNode(node->right, stream);
 
-    if(*node->data == DIV) fprintf(stream, "}");
+    if((int)node->data == DIV) fprintf(stream, "}");
 
 }
 
@@ -202,7 +209,7 @@ void TexTreeDump(Tree* tree, int* code_error) {
                 PrintTexNode(tree->root, tex_file);
 
                 fprintf(tex_file, "\\]\n");
-                fprintf(tex_file, "Function value at a point $x=%d$: \\[f(%d)=%d\\]\n", X, X, CountTree(tree->root, code_error));
+                fprintf(tex_file, "Function value at a point $x=%d$: \\[f(%d)=%.2lf\\]\n", X, X, CountTree(tree->root, code_error));
             }
             else {
                 fprintf(stderr, "tree is empty\n");

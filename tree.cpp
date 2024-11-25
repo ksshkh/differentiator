@@ -12,10 +12,8 @@ void TreeCtor(Tree* tree, int* code_error) {
     tree->depth = 0;
     tree->root = NULL;
 
-    fprintf(stderr, "here\n");
     tree->data_base = ReadInBuff(INPUT_FILE, &(tree->size_data_base), code_error);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
-    fprintf(stderr, "here\n");
 
     GetTreeDepth(tree, code_error);
 }
@@ -31,13 +29,15 @@ Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, 
     new_node->right = right;
     new_node->parent = parent;
 
+    if(left)  left->parent  = new_node;
+    if(right) right->parent = new_node;
+
     return new_node;
 
 }
 
 void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error) {
 
-    MY_ASSERT(data != NULL, PTR_ERROR);
     MY_ASSERT(node != NULL, PTR_ERROR);
 
     switch(side) {
@@ -100,103 +100,6 @@ void ReadTree(Tree* tree, int* code_error) {
 
 }
 
-int CountTree(Node* node, int* code_error) {
-
-    if(!node->left) {
-        return atoi(node->data);
-    }
-
-    int left_res = CountTree(node->left,  code_error);
-    int right_res = CountTree(node->right, code_error);
-
-    if(node->type == OP) {
-        int res = 0;
-        switch(*node->data) {
-            case ADD: {
-                res = left_res + right_res;
-                break;
-            }
-            case SUB: {
-                res = left_res - right_res;
-                break;
-            }
-            case MUL: {
-                res = left_res * right_res;
-                break;
-            }
-            case DIV: {
-                res = left_res / right_res;
-                break;
-            }
-            default:
-                break;
-        }
-        return res;
-    }
-}
-
-// Node* ReadInNode(Tree* tree, Node* node, Node* left, Node* right, int* code_error) {
-
-//     while(isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
-//         tree->data_base++;
-//     }
-
-//     if(*(tree->data_base) == ')') {
-//         return node;
-//     }
-
-//     while(isspace(*(tree->data_base)) || *(tree->data_base) == '(') {
-//         tree->data_base++;
-//     }
-
-//     char* data = tree->data_base;
-
-//     while(!isspace(*(tree->data_base))) {
-//         tree->data_base++;
-//     }
-
-//     *(tree->data_base) = '\0';
-
-//     Type type = DEFAULT;
-
-//     if(OP_CHECK(*data)) {
-//         type = OP;
-//     }
-//     else if(VAR_CHECK(*data)) {
-//         type = VAR;
-//     }
-//     else {
-//         type = NUM;
-//     }
-
-
-//     node = NodeCtor(type, data, NULL, NULL, NULL, code_error);
-
-//     // if(node->type == NUM || node->type == VAR) {
-//     //     while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
-//     //         tree->data_base++;
-//     //     }
-//     //     return node;
-//     // }
-
-//     while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
-//         tree->data_base++;
-//     }
-
-//     Node* parent_node = ReadInNode(tree, node->parent, node, NULL, code_error);
-
-//     node->left = node;
-
-//     while(*(tree->data_base) == ')' || isspace(*(tree->data_base))) {
-//         tree->data_base++;
-//     }
-
-//     Node* right_node = ReadInNode(tree, node->parent, NULL, node, code_error);
-
-//     return node;
-
-// }
-
 Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error) {
 
     while(isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
@@ -231,8 +134,9 @@ Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error) {
         type = NUM;
     }
 
-
-    node = NodeCtor(type, data, NULL, NULL, parent, code_error);
+    double num = strtod(data, NULL);
+    if(!num) num = (double)(int)(*data);
+    node = NodeCtor(type, num, NULL, NULL, parent, code_error);
 
     if(node->type == NUM || node->type == VAR) {
         while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {

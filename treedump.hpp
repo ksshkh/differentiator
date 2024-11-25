@@ -2,6 +2,7 @@
 #define TREEDUMP_HPP
 
 #include "tree.hpp"
+#include "diff.hpp"
 
 void DotTreeDump(Tree* tree, int* code_error);
 
