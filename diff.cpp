@@ -96,7 +96,15 @@ Node* DiffTree(Node* node, int* code_error) {
                 }
                 case SIN: {
                     if(node->left->type == NUM) return _NUM(0.0);
-                    return _COS(DiffTree(node->left, code_error));
+                    return _MUL(_COS(CopyTree(node->left, node, code_error)), DiffTree(node->left, code_error));
+                }
+                case COS: {
+                    if(node->left->type == NUM) return _NUM(0.0);
+                    return _MUL(_MUL(_SIN(CopyTree(node->left, node, code_error)), DiffTree(node->left, code_error)), _NUM(-1.0));
+                }
+                case LN: {
+                    if(node->left->type == NUM) return _NUM(0.0);
+                    return _MUL(_DIV(_NUM(1.0), CopyTree(node->left, node, code_error)), DiffTree(node->left, code_error));
                 }
                 default: {
                     break;

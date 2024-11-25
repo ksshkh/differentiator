@@ -3,9 +3,13 @@ digraph Tree {
 	node [shape = record];
 	edge [color = "#203D98"];
 	bgcolor = "#FFE7A5";
-	node0x5bb894ff3150 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#E07082", label = "{indx: 0x5bb894ff3150 | type: 1 | value: c | parent: (nil) | { left: 0x5bb894ff3120 | right: 0x5bb894ff30f0}}"];
-		node0x5bb894ff3150 -> node0x5bb894ff3120
-	node0x5bb894ff3120 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#FAAA82", label = "{indx: 0x5bb894ff3120 | type: 3 | value: 1.00 | parent: 0x5bb894ff3150 | { left: (nil) | right: (nil)}}"];
-		node0x5bb894ff3150 -> node0x5bb894ff30f0
-	node0x5bb894ff30f0 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#FAAA82", label = "{indx: 0x5bb894ff30f0 | type: 3 | value: 0.00 | parent: 0x5bb894ff3150 | { left: (nil) | right: (nil)}}"];
+	node0x5fde8ecc01b0 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#E07082", label = "{indx: 0x5fde8ecc01b0 | type: 1 | value: * | parent: (nil) | { left: 0x5fde8ecc0180 | right: 0x5fde8ecc00f0}}"];
+		node0x5fde8ecc01b0 -> node0x5fde8ecc0180
+	node0x5fde8ecc0180 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#E07082", label = "{indx: 0x5fde8ecc0180 | type: 1 | value: / | parent: 0x5fde8ecc01b0 | { left: 0x5fde8ecc0150 | right: 0x5fde8ecc0120}}"];
+		node0x5fde8ecc0180 -> node0x5fde8ecc0150
+	node0x5fde8ecc0150 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#FAAA82", label = "{indx: 0x5fde8ecc0150 | type: 3 | value: 1.00 | parent: 0x5fde8ecc0180 | { left: (nil) | right: (nil)}}"];
+		node0x5fde8ecc0180 -> node0x5fde8ecc0120
+	node0x5fde8ecc0120 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#A24892", label = "{indx: 0x5fde8ecc0120 | type: 2 | value: x | parent: 0x5fde8ecc0180 | { left: (nil) | right: (nil)}}"];
+		node0x5fde8ecc01b0 -> node0x5fde8ecc00f0
+	node0x5fde8ecc00f0 [color = "#203D98", shape = Mrecord, style = filled, fillcolor = "#FAAA82", label = "{indx: 0x5fde8ecc00f0 | type: 3 | value: 1.00 | parent: 0x5fde8ecc01b0 | { left: (nil) | right: (nil)}}"];
 }
