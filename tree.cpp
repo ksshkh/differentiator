@@ -1,16 +1,6 @@
 #include "tree.hpp"
 #include "utils.hpp"
-
-#define NODE_NUM_COLOR     "\"#FAAA82\""
-#define NODE_VAR_COLOR     "\"#A24892\""
-#define NODE_OP_COLOR      "\"#E07082\""
-#define NODE_BORDER_COLOR  "\"#203D98\""
-#define BACKGROUND_COLOR   "\"#FFE7A5\""
-
-static const char* DOT_FILE_NAME       = "./debug/tree.dot";
-static const char* IMAGE_NAME          = "./debug/tree_image.svg";
-static const char* HTML_FILE_NAME      = "./debug/tree.html";
-static const char* INPUT_FILE          = "./input.txt";
+#include "treedump.hpp"
 
 #define OP_CHECK(data)  data == ADD || data == SUB || data == MUL || data == DIV || data == DEG
 #define VAR_CHECK(data) data == X
@@ -97,158 +87,6 @@ void FreeNode(Node* node, int* code_error) {
 
 }
 
-void DotTreeDump(Tree* tree, int* code_error) {
-
-    MY_ASSERT(tree != NULL, PTR_ERROR);
-
-    FILE* dot_file = fopen(DOT_FILE_NAME, "w");
-    MY_ASSERT(dot_file != NULL, FOPEN_ERROR);
-
-    if(dot_file) {
-        fprintf(dot_file, "digraph Tree {\n");
-        fprintf(dot_file, "\trankdir = TB;\n");
-        fprintf(dot_file, "\tnode [shape = record];\n");
-        fprintf(dot_file, "\tedge [color = " NODE_BORDER_COLOR "];\n");
-        fprintf(dot_file, "\tbgcolor = " BACKGROUND_COLOR ";\n");
-
-        if(tree->root) {
-            PrintNode(tree->root, dot_file);
-        }
-        else {
-            fprintf(stderr, "tree is empty\n");
-        }
-
-        fprintf(dot_file, "}\n");
-
-        if(fclose(dot_file)) {
-            fprintf(stderr, "file did not close\n");
-        }
-
-        GraphCreate();
-        HtmlDump(code_error);
-    }
-    else {
-        fprintf(stderr, "file did not open\n");
-    }
-
-}
-
-void PrintNode(Node* node, FILE* stream) {
-
-    if(!node) return;
-
-
-    if(node->type == NUM) {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_NUM_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
-            node, node, node->type, node->data, node->parent, node->left, node->right);
-    }
-    else if(node->type == OP) {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
-            node, node, node->type, node->data, node->parent, node->left, node->right);
-    }
-    else {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_VAR_COLOR ", label = \"{indx: %p | type: %d | value: %s | parent: %p | { left: %p | right: %p}}\"];\n",
-            node, node, node->type, node->data, node->parent, node->left, node->right);
-    }
-
-
-    if(node->left) {
-        fprintf(stream, "\t\tnode%p -> node%p\n", node, node->left);
-        PrintNode(node->left,  stream);
-    }
-
-    if(node->right) {
-        fprintf(stream, "\t\tnode%p -> node%p\n", node, node->right);
-        PrintNode(node->right, stream);
-    }
-
-}
-
-void GraphCreate(void) {
-
-    char command[] = "dot -Tsvg /home/ksenia/huawei/differentiator/debug/tree.dot -o /home/ksenia/huawei/differentiator/debug/tree_image.svg";
-    system(command);
-}
-
-void HtmlDump(int *code_error) {
-
-    FILE* html = fopen(HTML_FILE_NAME, "a");
-    MY_ASSERT(html != NULL, FOPEN_ERROR);
-
-    long int image_size = 0;
-
-    char *image_data = ReadInBuff(IMAGE_NAME, &image_size, code_error);
-    MY_ASSERT(image_data != NULL, PTR_ERROR);
-
-    fprintf(html, "%s\n", image_data);
-
-    MY_ASSERT(fclose(html) == 0, FCLOSE_ERROR);
-}
-
-void PrintTree(Tree* tree, int* code_error) {
-
-    TREE_ASSERT(tree);
-
-    FILE* printout = fopen(INPUT_FILE, "w");
-    MY_ASSERT(printout != NULL, FOPEN_ERROR);
-
-    PreorderPrinting(tree->root, printout, code_error);
-
-    MY_ASSERT(fclose(printout) == 0, FCLOSE_ERROR);
-}
-
-void PreorderPrinting(Node* node, FILE* stream, int* code_error) {
-
-    MY_ASSERT(stream != NULL, FILE_ERROR);
-
-    if(!node) {
-        return;
-    }
-
-    fprintf(stream, "(");
-    fprintf(stream, " %s ", node->data);
-
-    PreorderPrinting(node->left, stream, code_error);
-    PreorderPrinting(node->right, stream, code_error);
-
-    fprintf(stream, ")");
-}
-
-void PostorderPrinting(Node* node, FILE* stream, int* code_error) {
-
-    MY_ASSERT(stream != NULL, FILE_ERROR);
-
-    if(!node) {
-        return;
-    }
-
-    fprintf(stream, "(");
-
-    PostorderPrinting(node->left, stream, code_error);
-    PostorderPrinting(node->right, stream, code_error);
-    fprintf(stream, " %s ", node->data);
-
-    fprintf(stream, ")");
-}
-
-void InorderPrinting(Node* node, FILE* stream, int* code_error) {
-
-    MY_ASSERT(stream != NULL, FILE_ERROR);
-
-    if(!node) {
-        return;
-    }
-
-    fprintf(stream, "(");
-
-    InorderPrinting(node->left, stream, code_error);
-    fprintf(stream, " %s ", node->data);
-    InorderPrinting(node->right, stream, code_error);
-
-    fprintf(stream, ")");
-
-}
-
 void ReadTree(Tree* tree, int* code_error) {
 
     MY_ASSERT(tree != NULL, PTR_ERROR);
@@ -261,8 +99,6 @@ void ReadTree(Tree* tree, int* code_error) {
     tree->data_base = copy_data_base;
 
 }
-
-
 
 int CountTree(Node* node, int* code_error) {
 
@@ -478,7 +314,5 @@ void GetTreeDepth(Tree* tree, int* code_error) {
 
 #endif
 
-#undef NODE_NUM_COLOR
-#undef NODE_BORDER_COLOR
-#undef BACKGROUND_COLOR
 #undef OP_CHECK
+#undef VAR_CHECK

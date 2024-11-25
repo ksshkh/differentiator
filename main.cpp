@@ -1,4 +1,5 @@
 #include "tree.hpp"
+#include "treedump.hpp"
 
 int main(void) {
     int code_error;
@@ -11,6 +12,7 @@ int main(void) {
     printf("\n%d\n", CountTree(tree.root, &code_error));
     fprintf(stderr, "here\n");
     PrintTree(&tree, &code_error);
+    TexTreeDump(&tree, &code_error);
     TreeDtor(&tree, &code_error);
 
     return 0;
