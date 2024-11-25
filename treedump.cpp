@@ -53,7 +53,6 @@ void PrintDotNode(Node* node, FILE* stream) {
 
     if(!node) return;
 
-
     if(node->type == NUM) {
         fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_NUM_COLOR ", label = \"{indx: %p | type: %d | value: %.2lf | parent: %p | { left: %p | right: %p}}\"];\n",
             node, node, node->type, node->data, node->parent, node->left, node->right);
@@ -126,7 +125,23 @@ void PreorderPrinting(Node* node, FILE* stream, int* code_error) {
         fprintf(stream, " %.2lf ", node->data);
     }
     else {
-        fprintf(stream, " %c ", (int)node->data);
+        switch((Operations)node->data) {
+            case SIN: {
+                fprintf(stream, " sin ");
+                break;
+            }
+            case COS: {
+                fprintf(stream, " cos ");
+                break;
+            }
+            case LN: {
+                fprintf(stream, " ln ");
+                break;
+            }
+            default: {
+                fprintf(stream, " %c ", (int)node->data);
+            }
+        }
     }
 
     PreorderPrinting(node->left, stream, code_error);
@@ -172,7 +187,10 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
 
 void PrintTexNode(Node* node, FILE* stream) {
 
-    if((int)node->data == DIV) fprintf(stream, "\\frac{");
+    if     ((int)node->data == DIV) fprintf(stream, "\\frac{");
+    else if((int)node->data == SIN) fprintf(stream, "\\sin(");
+    else if((int)node->data == COS) fprintf(stream, "\\cos(");
+    else if((int)node->data == LN) fprintf(stream, "\\ln(");
 
     if(node->left) PrintTexNode(node->left,  stream);
 
@@ -180,12 +198,13 @@ void PrintTexNode(Node* node, FILE* stream) {
 
     if(node->type == NUM) fprintf(stream, "%.2lf", node->data);
     else if(node->type == VAR) fprintf(stream, "%c", (int)node->data);
-    else if((int)node->data != DIV && (int)node->data != MUL) fprintf(stream, "%c", (int)node->data);
+    else if(!(UNARY_CHECK((int)node->data)) && (int)node->data != DIV && (int)node->data != MUL) fprintf(stream, "%c", (int)node->data);
     else if((int)node->data == MUL) fprintf(stream, "\\cdot");
 
     if((int)node->data == DIV || (int)node->data == DEG) fprintf(stream, "{");
+    else if(UNARY_CHECK((int)node->data)) fprintf(stream, ")");
 
-    if(node->right) PrintTexNode(node->right, stream);
+    if(node->right && !(UNARY_CHECK((int)node->data))) PrintTexNode(node->right, stream);
 
     if((int)node->data == DIV || (int)node->data == DEG) fprintf(stream, "}");
 

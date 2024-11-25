@@ -36,6 +36,9 @@ enum Operations {
     MUL = '*',
     DIV = '/',
     DEG = '^',
+    SIN = 's',
+    COS = 'c',
+    LN  = 'l',
 };
 
 enum Vars {

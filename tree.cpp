@@ -2,7 +2,7 @@
 #include "utils.hpp"
 #include "treedump.hpp"
 
-#define OP_CHECK(data)  data == ADD || data == SUB || data == MUL || data == DIV || data == DEG
+#define OP_CHECK(data)  data == ADD || data == SUB || data == MUL || data == DIV || data == DEG || !strncmp(&data, "sin", 3) || !strncmp(&data, "cos", 3) || !strncmp(&data, "ln", 2)
 #define VAR_CHECK(data) data == X
 
 void TreeCtor(Tree* tree, int* code_error) {
@@ -124,19 +124,22 @@ Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error) {
 
     Type type = DEFAULT;
 
+    double arg = 0;
+
     if(OP_CHECK(*data)) {
         type = OP;
+        arg = (double)(int)(*data);
     }
     else if(VAR_CHECK(*data)) {
         type = VAR;
+        arg = (double)(int)(*data);
     }
     else {
         type = NUM;
+        arg = strtod(data, NULL);
     }
 
-    double num = strtod(data, NULL);
-    if(!num) num = (double)(int)(*data);
-    node = NodeCtor(type, num, NULL, NULL, parent, code_error);
+    node = NodeCtor(type, arg, NULL, NULL, parent, code_error);
 
     if(node->type == NUM || node->type == VAR) {
         while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {

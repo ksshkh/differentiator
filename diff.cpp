@@ -11,7 +11,7 @@ TreeElem CountTree(Node* node, int* code_error) {
 
     if(node->type == OP) {
         TreeElem res = 0;
-        switch((int)node->data) {
+        switch((Operations)node->data) {
             case ADD: {
                 res = left_res + right_res;
                 break;
@@ -30,6 +30,18 @@ TreeElem CountTree(Node* node, int* code_error) {
             }
             case DEG: {
                 res = pow(left_res, right_res);
+                break;
+            }
+            case SIN: {
+                res = cos(left_res);
+                break;
+            }
+            case COS: {
+                res = sin(left_res);
+                break;
+            }
+            case LN: {
+                res = log(left_res);
                 break;
             }
             default:
@@ -79,8 +91,12 @@ Node* DiffTree(Node* node, int* code_error) {
                 }
                 case DEG: {
                     if(node->right->type == NUM) {
-    
+
                     }
+                }
+                case SIN: {
+                    if(node->left->type == NUM) return _NUM(0.0);
+                    return _COS(DiffTree(node->left, code_error));
                 }
                 default: {
                     break;
