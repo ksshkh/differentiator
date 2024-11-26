@@ -107,7 +107,7 @@ void PrintTree(Tree* tree, int* code_error) {
     FILE* printout = fopen(INPUT_FILE, "w");
     MY_ASSERT(printout != NULL, FOPEN_ERROR);
 
-    PreorderPrinting(tree->root, printout, code_error);
+    InorderPrinting(tree->root, printout, code_error);
 
     MY_ASSERT(fclose(printout) == 0, FCLOSE_ERROR);
 }
@@ -178,7 +178,30 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
     fprintf(stream, "(");
 
     InorderPrinting(node->left, stream, code_error);
-    fprintf(stream, " %lf ", node->data);
+
+    if (node->type == NUM) {
+        fprintf(stream, " %.2lf ", node->data);
+    }
+    else {
+        switch((Operations)node->data) {
+            case SIN: {
+                fprintf(stream, " sin ");
+                break;
+            }
+            case COS: {
+                fprintf(stream, " cos ");
+                break;
+            }
+            case LN: {
+                fprintf(stream, " ln ");
+                break;
+            }
+            default: {
+                fprintf(stream, " %c ", (int)node->data);
+            }
+        }
+    }
+
     InorderPrinting(node->right, stream, code_error);
 
     fprintf(stream, ")");

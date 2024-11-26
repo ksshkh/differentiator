@@ -94,23 +94,25 @@ void ReadTree(Tree* tree, int* code_error) {
 
     char* copy_data_base = tree->data_base;
 
-    tree->root = ReadPreNode(tree, tree->root, NULL, code_error);
+    tree->root = ReadNode(tree, tree->root, NULL, code_error);
 
     tree->data_base = copy_data_base;
 
 }
 
-Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error) {
+Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error) {
+
+    node = NodeCtor(DEFAULT, DEFAULT_VALUE, NULL, NULL, parent, code_error);
 
     while(isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
         tree->data_base++;
     }
 
-    if(*(tree->data_base) == ')') {
-        return node;
+    if(*(++tree->data_base) == '(') {
+        node->left  = ReadNode(tree, node->left,  node, code_error);
     }
 
-    while(isspace(*(tree->data_base)) || *(tree->data_base) == '(') {
+    while(isspace(*(tree->data_base))) {
         tree->data_base++;
     }
 
@@ -139,7 +141,8 @@ Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error) {
         arg = strtod(data, NULL);
     }
 
-    node = NodeCtor(type, arg, NULL, NULL, parent, code_error);
+    node->data = arg;
+    node->type = type;
 
     if(node->type == NUM || node->type == VAR) {
         while(*(tree->data_base) == ')' || isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
@@ -148,13 +151,13 @@ Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error) {
         return node;
     }
 
-    node->left = ReadPreNode(tree, node->left, node, code_error);
-
     while(*(tree->data_base) == ')' || isspace(*(tree->data_base))) {
         tree->data_base++;
     }
 
-    node->right = ReadPreNode(tree, node->right, node, code_error);
+    if(*(++tree->data_base) == '(') {
+        node->right  = ReadNode(tree, node->right,  node, code_error);
+    }
 
     return node;
 }

@@ -16,11 +16,12 @@ static const char* INPUT_FILE = "./input.txt";
 
 typedef double TreeElem;
 
+const double DEFAULT_VALUE = -666.0;
+
 enum Side {
     LEFT,
     RIGHT,
 };
-
 
 enum Type {
     DEFAULT = 0,
@@ -95,7 +96,7 @@ void FreeNode(Node* node, int* code_error);
 
 void ReadTree(Tree* tree, int* code_error);
 
-Node* ReadPreNode(Tree* tree, Node* node, Node* parent, int* code_error);
+Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error);
 
 void GetTreeDepth(Tree* tree, int* code_error);
 
