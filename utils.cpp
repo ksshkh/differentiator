@@ -63,3 +63,9 @@ char* GetString(FILE* stream, int* code_error) {
 
     return string;
  }
+
+bool CompareDoubles(double x, double y) {
+    const double EPS = 1e-9;
+
+    return fabs(x - y) < EPS;
+}

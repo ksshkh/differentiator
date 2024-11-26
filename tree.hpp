@@ -9,6 +9,7 @@
 #include <ctype.h>
 
 #include "errors.hpp"
+#include "utils.hpp"
 
 static const char* INPUT_FILE = "./input.txt";
 

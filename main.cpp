@@ -1,6 +1,6 @@
 #include "tree.hpp"
 #include "treedump.hpp"
-#include "diff.hpp"
+// #include "diff.hpp"
 
 int main(void) {
     int code_error;
@@ -12,7 +12,9 @@ int main(void) {
     printf("%lf\n", CountTree(tree.root, &code_error));
     PrintTree(&tree, &code_error);
     // tree.root = DiffTree(tree.root, &code_error);
-    TexTreeDump(&tree, &code_error);
+    // TexTreeDump(&tree, &code_error);
+    // DotTreeDump(&tree, &code_error);
+    tree.root = SimplifyElementaryOperations(tree.root, &code_error);
     DotTreeDump(&tree, &code_error);
     TreeDtor(&tree, &code_error);
 

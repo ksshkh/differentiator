@@ -131,3 +131,112 @@ Node* CopyTree(Node* node, Node* parent, int* code_error) {
 
     return node;
 }
+
+Node* SimplifyConstant(Node* node, int* code_error) {
+
+    MY_ASSERT(node != NULL, PTR_ERROR);
+
+    if(node->left->left)   node->left =  SimplifyConstant(node->left,  code_error);
+    if(node->right->right) node->right = SimplifyConstant(node->right, code_error);
+
+    if(node->left->type == NUM && node->right->type == NUM) {
+        switch((Operations)node->data) {
+            case ADD: {
+                return _NUM(node->left->data + node->right->data);
+            }
+            case SUB: {
+                return _NUM(node->left->data - node->right->data);
+            }
+            case MUL: {
+                return _NUM(node->left->data * node->right->data);
+            }
+            case DIV: {
+                return _NUM(node->left->data / node->right->data);
+            }
+            case DEG: {
+                return _NUM(pow(node->left->data, node->right->data));
+            }
+            case SIN: {
+                return _NUM(sin(node->left->data));
+            }
+            case COS: {
+                return _NUM(cos(node->left->data));
+            }
+            case LN: {
+                return _NUM(log(node->left->data));
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    return node;
+}
+
+Node* SimplifyElementaryOperations(Node* node, int* code_error) {
+
+    MY_ASSERT(node != NULL, PTR_ERROR);
+
+    if(node->left->left)   node->left =  SimplifyElementaryOperations(node->left,  code_error);
+    if(node->right->right) node->right = SimplifyElementaryOperations(node->right, code_error);
+
+    switch((Operations)node->data) {
+        case ADD: {
+            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
+                return _VAR(node->left->data);
+            }
+            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
+                return _VAR(node->right->data);
+            }
+            break;
+        }
+        case SUB: {
+            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
+                return _VAR(node->left->data);
+            }
+            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
+                return _VAR(node->right->data);
+            }
+            break;
+        }
+        case MUL: {
+            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 1.0)) {
+                return _VAR(node->left->data);
+            }
+            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 1.0)) {
+                return _VAR(node->right->data);
+            }
+            else if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
+                return _NUM(0.0);
+            }
+            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
+                return _NUM(0.0);
+            }
+            break;
+        }
+        case DIV: {
+            if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
+                return _NUM(0.0);
+            }
+            else if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 1.0)) {
+                return _VAR(node->left->data);
+            }
+            break;
+        }
+        case DEG: {
+            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 1.0)) {
+                return _VAR(node->left->data);
+            }
+            else if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
+                return _NUM(1.0);
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    return node;
+}
