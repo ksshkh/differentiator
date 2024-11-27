@@ -91,7 +91,7 @@ Node* DiffTree(Node* node, int* code_error) {
                 }
                 case DEG: {
                     if(node->right->type == NUM) {
-
+                        return _MUL(_MUL(_NUM(node->right->data), (_DEG(CopyTree(node->left, node, code_error), _NUM(node->right->data - 1.0)))), DiffTree(node->left, code_error));
                     }
                 }
                 case SIN: {

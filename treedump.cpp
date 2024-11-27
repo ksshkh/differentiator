@@ -210,6 +210,8 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
 
 void PrintTexNode(Node* node, FILE* stream) {
 
+    if(node->type == OP && (Operations)node->data != DIV && (Operations)node->data != MUL && (Operations)node->data != DEG) fprintf(stream, "(");
+
     if     ((int)node->data == DIV) fprintf(stream, "\\frac{");
     else if((int)node->data == SIN) fprintf(stream, "\\sin(");
     else if((int)node->data == COS) fprintf(stream, "\\cos(");
@@ -222,7 +224,7 @@ void PrintTexNode(Node* node, FILE* stream) {
     if(node->type == NUM) fprintf(stream, "%.2lf", node->data);
     else if(node->type == VAR) fprintf(stream, "%c", (int)node->data);
     else if(!(UNARY_CHECK((int)node->data)) && (int)node->data != DIV && (int)node->data != MUL) fprintf(stream, "%c", (int)node->data);
-    else if((int)node->data == MUL) fprintf(stream, "\\cdot");
+    else if((int)node->data == MUL) fprintf(stream, " \\cdot ");
 
     if((int)node->data == DIV || (int)node->data == DEG) fprintf(stream, "{");
     else if(UNARY_CHECK((int)node->data)) fprintf(stream, ")");
@@ -230,6 +232,8 @@ void PrintTexNode(Node* node, FILE* stream) {
     if(node->right && !(UNARY_CHECK((int)node->data))) PrintTexNode(node->right, stream);
 
     if((int)node->data == DIV || (int)node->data == DEG) fprintf(stream, "}");
+
+    if(node->type == OP && (Operations)node->data != DIV && (Operations)node->data != MUL && (Operations)node->data != DEG) fprintf(stream, ")");
 
 }
 
@@ -254,6 +258,18 @@ void TexTreeDump(Tree* tree, int* code_error) {
                 fprintf(tex_file, "Function value at a point $x=%d$: \\[f(%d)=%.2lf\\]\n", X, X, CountTree(tree->root, code_error));
 
                 tree->root = DiffTree(tree->root, code_error);
+                fprintf(tex_file, "\\[f^{(1)}(x)=");
+                PrintTexNode(tree->root, tex_file);
+
+                fprintf(tex_file, "\\]\n");
+
+                tree->root = SimplifyElementaryOperations(tree->root, code_error);
+                fprintf(tex_file, "\\[f^{(1)}(x)=");
+                PrintTexNode(tree->root, tex_file);
+
+                fprintf(tex_file, "\\]\n");
+
+                tree->root = SimplifyConstant(tree->root, code_error);
                 fprintf(tex_file, "\\[f^{(1)}(x)=");
                 PrintTexNode(tree->root, tex_file);
 
