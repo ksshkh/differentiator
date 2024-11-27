@@ -183,53 +183,50 @@ Node* SimplifyElementaryOperations(Node* node, int* code_error) {
 
     switch((Operations)node->data) {
         case ADD: {
-            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
-                return _VAR(node->left->data);
+            if(CompareDoubles(node->right->data, 0.0)) {
+                node = ReplaceNode(node, node->left, code_error);
             }
-            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
-                return _VAR(node->right->data);
+            else if(CompareDoubles(node->left->data, 0.0)) {
+                node = ReplaceNode(node, node->right, code_error);
             }
             break;
         }
         case SUB: {
-            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
-                return _VAR(node->left->data);
+            if(CompareDoubles(node->right->data, 0.0)) {
+                node = ReplaceNode(node, node->left, code_error);
             }
-            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
-                return _VAR(node->right->data);
+            else if(CompareDoubles(node->left->data, 0.0)) {
+                node = ReplaceNode(node, node->right, code_error);
             }
             break;
         }
         case MUL: {
-            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 1.0)) {
-                return _VAR(node->left->data);
+            if(CompareDoubles(node->right->data, 1.0)) {
+                node = ReplaceNode(node, node->left, code_error);
             }
-            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 1.0)) {
-                return _VAR(node->right->data);
+            else if(CompareDoubles(node->left->data, 1.0)) {
+                node = ReplaceNode(node, node->right, code_error);
             }
-            else if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
-                return _NUM(0.0);
-            }
-            else if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
-                return _NUM(0.0);
+            else if(CompareDoubles(node->right->data, 0.0) || CompareDoubles(node->left->data, 0.0)) {
+                node = ReplaceNode(node, _NUM(0.0), code_error);
             }
             break;
         }
         case DIV: {
-            if(node->right->type == VAR && node->left->type == NUM && CompareDoubles(node->left->data, 0.0)) {
-                return _NUM(0.0);
+            if(CompareDoubles(node->left->data, 0.0)) {
+                node = ReplaceNode(node, _NUM(0.0), code_error);
             }
-            else if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 1.0)) {
-                return _VAR(node->left->data);
+            else if(CompareDoubles(node->right->data, 1.0)) {
+                node = ReplaceNode(node, node->left, code_error);
             }
             break;
         }
         case DEG: {
-            if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 1.0)) {
-                return _VAR(node->left->data);
+            if(CompareDoubles(node->right->data, 1.0)) {
+                node = ReplaceNode(node, node->left, code_error);
             }
-            else if(node->left->type == VAR && node->right->type == NUM && CompareDoubles(node->right->data, 0.0)) {
-                return _NUM(1.0);
+            else if(CompareDoubles(node->right->data, 0.0)) {
+                node = ReplaceNode(node, _NUM(1.0), code_error);
             }
             break;
         }

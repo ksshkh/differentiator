@@ -58,7 +58,37 @@ void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error
         default:
             fprintf(stderr, "wrong side\n");
     }
+}
 
+Node* ReplaceNode(Node* node, Node* new_node, int* code_error) {
+
+    MY_ASSERT(node     != NULL, PTR_ERROR);
+    MY_ASSERT(new_node != NULL, PTR_ERROR);
+
+    if(node->parent) {
+        if(node->parent->left == node) {
+            node->parent->left = new_node;
+        }
+        else if(node->parent->right == node) {
+            node->parent->right = new_node;
+        }
+    }
+
+    new_node->parent = node->parent;
+
+    if(new_node == node->left) {
+        FreeNode(node->right, code_error);
+        free(node);
+    }
+    else if(new_node == node->right) {
+        FreeNode(node->left, code_error);
+        free(node);
+    }
+    else {
+        FreeNode(node, code_error);
+    }
+
+    return new_node;
 }
 
 void TreeDtor(Tree* tree, int* code_error) {

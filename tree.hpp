@@ -91,6 +91,8 @@ Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, 
 
 void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error);
 
+Node* ReplaceNode(Node* node, Node* new_node, int* code_error);
+
 void TreeDtor(Tree* tree, int* code_error);
 
 void FreeNode(Node* node, int* code_error);
