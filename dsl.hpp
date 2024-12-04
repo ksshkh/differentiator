@@ -4,6 +4,10 @@
 #define _NUM(num) NodeCtor(num_of_nodes, NUM, num, NULL, NULL, NULL, code_error)
 #define _VAR(var) NodeCtor(num_of_nodes, VAR, var, NULL, NULL, NULL, code_error)
 
+#define _EOT      NodeCtor(num_of_nodes, OP,  EOT,   NULL, NULL, NULL, code_error)
+#define _L_BR     NodeCtor(num_of_nodes, OP,  L_BR,  NULL, NULL, NULL, code_error)
+#define _R_BR     NodeCtor(num_of_nodes, OP,  R_BR,  NULL, NULL, NULL, code_error)
+
 #define _ADD(left, right) NodeCtor(num_of_nodes, OP,  ADD, left, right, NULL, code_error)
 #define _SUB(left, right) NodeCtor(num_of_nodes, OP,  SUB, left, right, NULL, code_error)
 #define _MUL(left, right) NodeCtor(num_of_nodes, OP,  MUL, left, right, NULL, code_error)

@@ -41,6 +41,10 @@ enum Operations {
     SIN = 's',
     COS = 'c',
     LN  = 'l',
+
+    EOT  = '$',
+    L_BR = '(',
+    R_BR = ')',
 };
 
 enum Vars {
@@ -60,6 +64,8 @@ struct Node {
 struct Tree {
     Node* root = NULL;
     size_t num_of_nodes = 0;
+
+    Node** tokens = NULL;
 
     char* data_base = 0;
     long int size_data_base = 0;

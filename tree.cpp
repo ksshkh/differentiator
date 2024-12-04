@@ -16,6 +16,8 @@ void TreeCtor(Tree* tree, int* code_error) {
     tree->data_base = ReadInBuff(INPUT_FILE, &(tree->size_data_base), code_error);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
 
+    tree->tokens = (Node**)calloc(tree->size_data_base, sizeof(Node*));
+    MY_ASSERT(tree->tokens != NULL, PTR_ERROR);
 }
 
 Node* NodeCtor(size_t* num_of_nodes, Type type, TreeElem data, Node* left, Node* right, Node* parent, int* code_error) {
@@ -106,6 +108,9 @@ void TreeDtor(Tree* tree, int* code_error) {
     free(tree->data_base);
     tree->data_base = NULL;
 
+    free(tree->tokens);
+    tree->tokens = NULL;
+
     tree->size_data_base = 0;
     tree->num_of_nodes = 0;
 
@@ -129,7 +134,8 @@ void ReadTree(Tree* tree, int* code_error) {
 
     if(*(tree->data_base) == '$') {
         size_t ip = 0;
-        tree->root = GetTree(&(tree->num_of_nodes), tree->data_base, &ip, code_error);
+        // tree->root = GetTree(&(tree->num_of_nodes), tree->data_base, &ip, code_error);
+        TokensParcing(tree, &(tree->num_of_nodes), code_error);
     }
     else {
         char* copy_data_base = tree->data_base;

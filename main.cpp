@@ -4,7 +4,6 @@
 int main(void) {
     int code_error;
     Tree tree = {};
-    int ip = 0;
 
     TreeCtor(&tree, &code_error);
     ReadTree(&tree, &code_error);
