@@ -84,10 +84,7 @@ void TokensParcing(Tree* tree, size_t* num_of_nodes, int* code_error) {
             data_base_ip += 3;
         }
     }
-
-    for(tokens_ip = 0; (long int)tokens_ip < tree->size_data_base; tokens_ip++) {
-        if(tree->tokens[tokens_ip]) printf("%lf\n", tree->tokens[tokens_ip]->data);
-    }
+    
 }
 
 Node* GetTree(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
@@ -145,13 +142,13 @@ Node* GetDeg(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
     MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    Node* node = GetBrackets(num_of_nodes, tokens, ip, code_error);
+    Node* node = GetUnaryOp(num_of_nodes, tokens, ip, code_error);
 
     while((Operations)tokens[*ip]->data == DEG) {
         Operations op = (Operations)tokens[*ip]->data;
         (*ip)++;
 
-        Node* node_right = GetBrackets(num_of_nodes, tokens, ip, code_error);
+        Node* node_right = GetUnaryOp(num_of_nodes, tokens, ip, code_error);
         Node* node_left  = node;
 
         switch(op) {
@@ -223,7 +220,7 @@ Node* GetMulAndDiv(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_er
                 break;
             }
             case DIV: {
-                node = _MUL(left_node, right_node);
+                node = _DIV(left_node, right_node);
                 break;
             }
             default: {
@@ -231,6 +228,40 @@ Node* GetMulAndDiv(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_er
             }
         }
     }
+
+    return node;
+}
+
+Node* GetUnaryOp(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
+
+    MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
+    MY_ASSERT(ip           != NULL, PTR_ERROR);
+
+    while(tokens[*ip]->type == OP && (Operations)tokens[*ip]->data != L_BR && (Operations)tokens[*ip]->data != R_BR) {
+
+        Operations op = (Operations)tokens[*ip]->data;
+        (*ip)++;
+
+        Node* left_node = GetBrackets(num_of_nodes, tokens, ip, code_error);
+
+        switch(op) {
+            case SIN: {
+                return _SIN(left_node);
+            }
+            case COS: {
+                return _COS(left_node);
+            }
+            case LN: {
+                return _LN(left_node);
+            }
+            default: {
+                break;
+            }
+        }
+
+    }
+    Node* node = GetBrackets(num_of_nodes, tokens, ip, code_error);
 
     return node;
 }

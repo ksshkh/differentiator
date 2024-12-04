@@ -15,6 +15,7 @@ Node* GetVar       (size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_e
 Node* GetDeg       (size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error);
 Node* GetAddAndSub (size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error);
 Node* GetMulAndDiv (size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error);
+Node* GetUnaryOp   (size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error);
 Node* GetBrackets  (size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error);
 
 #endif // INPUT_HPP
