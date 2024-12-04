@@ -59,7 +59,7 @@ struct Node {
 
 struct Tree {
     Node* root = NULL;
-    size_t depth = 0;
+    size_t num_of_nodes = 0;
 
     char* data_base = 0;
     long int size_data_base = 0;
@@ -87,20 +87,18 @@ struct Tree {
 
 void TreeCtor(Tree* tree, int* code_error);
 
-Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, int* code_error);
+Node* NodeCtor(size_t* num_of_nodes, Type type, TreeElem data, Node* left, Node* right, Node* parent, int* code_error);
 
-void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error);
+void AddNewNode(size_t* num_of_nodes, Type type, Node* node, TreeElem data, Side side, int* code_error);
 
-Node* ReplaceNode(Node* node, Node* new_node, int* code_error);
+Node* ReplaceNode(size_t* num_of_nodes, Node* node, Node* new_node, int* code_error);
 
 void TreeDtor(Tree* tree, int* code_error);
 
-void FreeNode(Node* node, int* code_error);
+void FreeNode(size_t* num_of_nodes, Node* node, int* code_error);
 
 void ReadTree(Tree* tree, int* code_error);
 
 Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error);
-
-void GetTreeDepth(Tree* tree, int* code_error);
 
 #endif // TREE_HPP

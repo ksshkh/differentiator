@@ -257,19 +257,13 @@ void TexTreeDump(Tree* tree, int* code_error) {
                 fprintf(tex_file, "\\]\n");
                 fprintf(tex_file, "Function value at a point $x=%d$: \\[f(%d)=%.2lf\\]\n", X, X, CountTree(tree->root, code_error));
 
-                tree->root = DiffTree(tree->root, code_error);
+                tree->root = DiffTree(&(tree->num_of_nodes), tree->root, code_error);
                 fprintf(tex_file, "\\[f^{(1)}(x)=");
                 PrintTexNode(tree->root, tex_file);
 
                 fprintf(tex_file, "\\]\n");
 
-                tree->root = SimplifyElementaryOperations(tree->root, code_error);
-                fprintf(tex_file, "\\[f^{(1)}(x)=");
-                PrintTexNode(tree->root, tex_file);
-
-                fprintf(tex_file, "\\]\n");
-
-                tree->root = SimplifyConstant(tree->root, code_error);
+                tree->root = SimplifyExpression(&(tree->num_of_nodes), tree->root, code_error);
                 fprintf(tex_file, "\\[f^{(1)}(x)=");
                 PrintTexNode(tree->root, tex_file);
 

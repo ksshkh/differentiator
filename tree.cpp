@@ -1,6 +1,7 @@
 #include "tree.hpp"
 #include "utils.hpp"
 #include "treedump.hpp"
+#include "input.hpp"
 
 #define OP_CHECK(data)  data == ADD || data == SUB || data == MUL || data == DIV || data == DEG || !strncmp(&data, "sin", 3) || !strncmp(&data, "cos", 3) || !strncmp(&data, "ln", 2)
 #define VAR_CHECK(data) data == X
@@ -9,19 +10,20 @@ void TreeCtor(Tree* tree, int* code_error) {
 
     MY_ASSERT(tree != NULL, PTR_ERROR);
 
-    tree->depth = 0;
+    tree->num_of_nodes = 0;
     tree->root = NULL;
 
     tree->data_base = ReadInBuff(INPUT_FILE, &(tree->size_data_base), code_error);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
 
-    GetTreeDepth(tree, code_error);
 }
 
-Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, int* code_error) {
+Node* NodeCtor(size_t* num_of_nodes, Type type, TreeElem data, Node* left, Node* right, Node* parent, int* code_error) {
 
     Node* new_node = (Node*)calloc(1, sizeof(Node));
     MY_ASSERT(new_node != NULL, PTR_ERROR);
+
+    (*num_of_nodes)++;
 
     new_node->type = type;
     new_node->data = data;
@@ -36,20 +38,20 @@ Node* NodeCtor(Type type, TreeElem data, Node* left, Node* right, Node* parent, 
 
 }
 
-void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error) {
+void AddNewNode(size_t* num_of_nodes, Type type, Node* node, TreeElem data, Side side, int* code_error) {
 
     MY_ASSERT(node != NULL, PTR_ERROR);
 
     switch(side) {
         case LEFT: {
-            Node* new_node = NodeCtor(type, data, node->left, NULL, node, code_error);
+            Node* new_node = NodeCtor(num_of_nodes, type, data, node->left, NULL, node, code_error);
             MY_ASSERT(new_node != NULL, PTR_ERROR);
 
             node->left = new_node;
             break;
         }
         case RIGHT: {
-            Node* new_node = NodeCtor(type, data, NULL, node->right, node, code_error);
+            Node* new_node = NodeCtor(num_of_nodes, type, data, NULL, node->right, node, code_error);
             MY_ASSERT(new_node != NULL, PTR_ERROR);
 
             node->right = new_node;
@@ -60,7 +62,7 @@ void AddNewNode(Type type, Node* node, TreeElem data, Side side, int* code_error
     }
 }
 
-Node* ReplaceNode(Node* node, Node* new_node, int* code_error) {
+Node* ReplaceNode(size_t* num_of_nodes, Node* node, Node* new_node, int* code_error) {
 
     MY_ASSERT(node     != NULL, PTR_ERROR);
     MY_ASSERT(new_node != NULL, PTR_ERROR);
@@ -77,15 +79,17 @@ Node* ReplaceNode(Node* node, Node* new_node, int* code_error) {
     new_node->parent = node->parent;
 
     if(new_node == node->left) {
-        FreeNode(node->right, code_error);
+        FreeNode(num_of_nodes, node->right, code_error);
         free(node);
+        (*num_of_nodes)--;
     }
     else if(new_node == node->right) {
-        FreeNode(node->left, code_error);
+        FreeNode(num_of_nodes, node->left, code_error);
         free(node);
+        (*num_of_nodes)--;
     }
     else {
-        FreeNode(node, code_error);
+        FreeNode(num_of_nodes, node, code_error);
     }
 
     return new_node;
@@ -96,25 +100,26 @@ void TreeDtor(Tree* tree, int* code_error) {
     MY_ASSERT(tree != NULL, PTR_ERROR);
     TREE_ASSERT(tree);
 
-    FreeNode(tree->root, code_error);
+    FreeNode(&(tree->num_of_nodes), tree->root, code_error);
     tree->root = NULL;
 
     free(tree->data_base);
     tree->data_base = NULL;
 
-    tree->depth = 0;
     tree->size_data_base = 0;
+    tree->num_of_nodes = 0;
 
 }
 
-void FreeNode(Node* node, int* code_error) {
+void FreeNode(size_t* num_of_nodes, Node* node, int* code_error) {
 
     if(!node) return;
 
-    FreeNode(node->left, code_error);
-    FreeNode(node->right, code_error);
+    FreeNode(num_of_nodes, node->left, code_error);
+    FreeNode(num_of_nodes, node->right, code_error);
     free(node);
 
+    (*num_of_nodes)--;
 }
 
 void ReadTree(Tree* tree, int* code_error) {
@@ -122,17 +127,23 @@ void ReadTree(Tree* tree, int* code_error) {
     MY_ASSERT(tree != NULL, PTR_ERROR);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
 
-    char* copy_data_base = tree->data_base;
+    if(*(tree->data_base) == '$') {
+        size_t ip = 0;
+        tree->root = GetTree(&(tree->num_of_nodes), tree->data_base, &ip, code_error);
+    }
+    else {
+        char* copy_data_base = tree->data_base;
 
-    tree->root = ReadNode(tree, tree->root, NULL, code_error);
+        tree->root = ReadNode(tree, tree->root, NULL, code_error);
 
-    tree->data_base = copy_data_base;
+        tree->data_base = copy_data_base;
+    }
 
 }
 
 Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error) {
 
-    node = NodeCtor(DEFAULT, DEFAULT_VALUE, NULL, NULL, parent, code_error);
+    node = NodeCtor(&(tree->num_of_nodes), DEFAULT, DEFAULT_VALUE, NULL, NULL, parent, code_error);
 
     while(isspace(*(tree->data_base)) || *(tree->data_base) == '\0') {
         tree->data_base++;
@@ -190,22 +201,6 @@ Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error) {
     }
 
     return node;
-}
-
-void GetTreeDepth(Tree* tree, int* code_error) {
-
-    MY_ASSERT(tree != NULL, PTR_ERROR);
-    MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
-
-    size_t curtain_depth = 0;
-
-    for(long int i = 0; i < tree->size_data_base; i++) {
-
-        if     (tree->data_base[i] == '(') curtain_depth++;
-        else if(tree->data_base[i] == ')') curtain_depth--;
-
-        tree->depth = (curtain_depth > tree->depth) ? curtain_depth : tree->depth;
-    }
 }
 
 #ifdef DEBUG

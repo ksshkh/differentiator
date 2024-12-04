@@ -11,6 +11,7 @@ TreeElem CountTree(Node* node, int* code_error) {
 
     if(node->type == OP) {
         TreeElem res = 0;
+
         switch((Operations)node->data) {
             case ADD: {
                 res = left_res + right_res;
@@ -51,11 +52,13 @@ TreeElem CountTree(Node* node, int* code_error) {
     }
 }
 
-Node* DiffTree(Node* node, int* code_error) {
+Node* DiffTree(size_t* num_of_nodes, Node* node, int* code_error) {
 
     if(!node) {
         return node;
     }
+
+    Node* new_node = NULL;
 
     switch(node->type) {
         case NUM: {
@@ -67,44 +70,57 @@ Node* DiffTree(Node* node, int* code_error) {
         case OP: {
             switch((int)node->data) {
                 case ADD: {
-                    return _ADD(DiffTree(node->left, code_error), DiffTree(node->right, code_error));
+                    new_node = _ADD(DiffTree(num_of_nodes, node->left, code_error), DiffTree(num_of_nodes, node->right, code_error));
+                    FreeNode(num_of_nodes, node, code_error);
+                    return new_node;
                 }
                 case SUB: {
-                    return _SUB(DiffTree(node->left, code_error), DiffTree(node->right, code_error));
+                    new_node = _SUB(DiffTree(num_of_nodes, node->left, code_error), DiffTree(num_of_nodes, node->right, code_error));
+                    FreeNode(num_of_nodes, node, code_error);
+                    return new_node;
                 }
                 case MUL: {
-                    Node* dL = DiffTree(node->left,  code_error);
-                    Node* dR = DiffTree(node->right, code_error);
-                    Node* cL = CopyTree(node->left,  node, code_error);
-                    Node* cR = CopyTree(node->right, node, code_error);
+                    Node* dL = DiffTree(num_of_nodes, node->left,  code_error);
+                    Node* dR = DiffTree(num_of_nodes, node->right, code_error);
+                    Node* cL = CopyTree(num_of_nodes, node->left,  node, code_error);
+                    Node* cR = CopyTree(num_of_nodes, node->right, node, code_error);
 
-                    return _ADD(_MUL(dL, cR), _MUL(cL, dR));
+                    new_node = _ADD(_MUL(dL, cR), _MUL(cL, dR));
+                    FreeNode(num_of_nodes, node, code_error);
+                    return new_node;
                 }
                 case DIV: {
-                    Node* dL = DiffTree(node->left,  code_error);
-                    Node* dR = DiffTree(node->right, code_error);
-                    Node* cL = CopyTree(node->left,  node, code_error);
-                    Node* cR1 = CopyTree(node->right, node, code_error);
-                    Node* cR2 = CopyTree(node->right, node, code_error);
+                    Node* dL =  DiffTree(num_of_nodes, node->left,  code_error);
+                    Node* dR =  DiffTree(num_of_nodes, node->right, code_error);
+                    Node* cL =  CopyTree(num_of_nodes, node->left,  node, code_error);
+                    Node* cR1 = CopyTree(num_of_nodes, node->right, node, code_error);
+                    Node* cR2 = CopyTree(num_of_nodes, node->right, node, code_error);
 
-                    return _DIV(_SUB(_MUL(dL, cR1), _MUL(cL, dR)), _DEG(cR2, _NUM(2.0)));
+                    new_node = _DIV(_SUB(_MUL(dL, cR1), _MUL(cL, dR)), _DEG(cR2, _NUM(2.0)));
+                    FreeNode(num_of_nodes, node, code_error);
+                    return new_node;
                 }
                 case DEG: {
                     if(node->right->type == NUM) {
-                        return _MUL(_MUL(_NUM(node->right->data), (_DEG(CopyTree(node->left, node, code_error), _NUM(node->right->data - 1.0)))), DiffTree(node->left, code_error));
+                        new_node = _MUL(_MUL(_NUM(node->right->data), (_DEG(CopyTree(num_of_nodes, node->left, node, code_error), _NUM(node->right->data - 1.0)))), DiffTree(num_of_nodes, node->left, code_error));
+                        FreeNode(num_of_nodes, node, code_error);
+                        return new_node;
                     }
                 }
                 case SIN: {
-                    if(node->left->type == NUM) return _NUM(0.0);
-                    return _MUL(_COS(CopyTree(node->left, node, code_error)), DiffTree(node->left, code_error));
+                    new_node = _MUL(_COS(CopyTree(num_of_nodes, node->left, node, code_error)), DiffTree(num_of_nodes, node->left, code_error));
+                    FreeNode(num_of_nodes, node, code_error);
+                    return new_node;
                 }
                 case COS: {
-                    if(node->left->type == NUM) return _NUM(0.0);
-                    return _MUL(_MUL(_SIN(CopyTree(node->left, node, code_error)), DiffTree(node->left, code_error)), _NUM(-1.0));
+                    new_node = _MUL(_MUL(_SIN(CopyTree(num_of_nodes, node->left, node, code_error)), DiffTree(num_of_nodes, node->left, code_error)), _NUM(-1.0));
+                    FreeNode(num_of_nodes, node, code_error);
+                    return new_node;
                 }
                 case LN: {
-                    if(node->left->type == NUM) return _NUM(0.0);
-                    return _MUL(_DIV(_NUM(1.0), CopyTree(node->left, node, code_error)), DiffTree(node->left, code_error));
+                    new_node = _MUL(_DIV(_NUM(1.0), CopyTree(num_of_nodes, node->left, node, code_error)), DiffTree(num_of_nodes, node->left, code_error));
+                    FreeNode(num_of_nodes, node, code_error);
+                    return new_node;
                 }
                 default: {
                     break;
@@ -119,116 +135,125 @@ Node* DiffTree(Node* node, int* code_error) {
     return node;
 }
 
-Node* CopyTree(Node* node, Node* parent, int* code_error) {
+Node* CopyTree(size_t* num_of_nodes, Node* node, Node* parent, int* code_error) {
 
     if(!node) {
         return node;
     }
 
-    node = NodeCtor(node->type, node->data, node->left, node->right, parent, code_error);
-    node->left  = CopyTree(node->left,  node, code_error);
-    node->right = CopyTree(node->right, node, code_error);
+    node = NodeCtor(num_of_nodes, node->type, node->data, node->left, node->right, parent, code_error);
+    node->left  = CopyTree(num_of_nodes, node->left,  node, code_error);
+    node->right = CopyTree(num_of_nodes, node->right, node, code_error);
 
     return node;
 }
 
-Node* SimplifyConstant(Node* node, int* code_error) {
+Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
 
     MY_ASSERT(node != NULL, PTR_ERROR);
 
-    if(node->left->left)   node->left =  SimplifyConstant(node->left,  code_error);
-    if(node->right->right) node->right = SimplifyConstant(node->right, code_error);
+    if(!node->left || !node->right) return node;
 
-    if(node->left->type == NUM && node->right->type == NUM) {
-        switch((Operations)node->data) {
-            case ADD: {
-                return _NUM(node->left->data + node->right->data);
-            }
-            case SUB: {
-                return _NUM(node->left->data - node->right->data);
-            }
-            case MUL: {
-                return _NUM(node->left->data * node->right->data);
-            }
-            case DIV: {
-                return _NUM(node->left->data / node->right->data);
-            }
-            case DEG: {
-                return _NUM(pow(node->left->data, node->right->data));
-            }
-            case SIN: {
-                return _NUM(sin(node->left->data));
-            }
-            case COS: {
-                return _NUM(cos(node->left->data));
-            }
-            case LN: {
-                return _NUM(log(node->left->data));
-            }
-            default: {
-                break;
-            }
-        }
-    }
+    if(node->left->left)   node->left =  SimplifyExpression(num_of_nodes, node->left,  code_error);
+    if(node->right->right) node->right = SimplifyExpression(num_of_nodes, node->right, code_error);
 
-    return node;
-}
-
-Node* SimplifyElementaryOperations(Node* node, int* code_error) {
-
-    MY_ASSERT(node != NULL, PTR_ERROR);
-
-    if(node->left->left)   node->left =  SimplifyElementaryOperations(node->left,  code_error);
-    if(node->right->right) node->right = SimplifyElementaryOperations(node->right, code_error);
+    Node* new_node = NULL;
 
     switch((Operations)node->data) {
         case ADD: {
-            if(CompareDoubles(node->right->data, 0.0)) {
-                node = ReplaceNode(node, node->left, code_error);
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(node->left->data + node->right->data);
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
+            else if(CompareDoubles(node->right->data, 0.0)) {
+                node = ReplaceNode(num_of_nodes, node, node->left, code_error);
             }
             else if(CompareDoubles(node->left->data, 0.0)) {
-                node = ReplaceNode(node, node->right, code_error);
+                node = ReplaceNode(num_of_nodes, node, node->right, code_error);
             }
             break;
         }
         case SUB: {
-            if(CompareDoubles(node->right->data, 0.0)) {
-                node = ReplaceNode(node, node->left, code_error);
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(node->left->data - node->right->data);
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
+            else if(CompareDoubles(node->right->data, 0.0)) {
+                node = ReplaceNode(num_of_nodes, node, node->left, code_error);
             }
             else if(CompareDoubles(node->left->data, 0.0)) {
-                node = ReplaceNode(node, node->right, code_error);
+                node = ReplaceNode(num_of_nodes, node, node->right, code_error);
             }
             break;
         }
         case MUL: {
-            if(CompareDoubles(node->right->data, 1.0)) {
-                node = ReplaceNode(node, node->left, code_error);
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(node->left->data * node->right->data);
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
+            else if(CompareDoubles(node->right->data, 1.0)) {
+                node = ReplaceNode(num_of_nodes, node, node->left, code_error);
             }
             else if(CompareDoubles(node->left->data, 1.0)) {
-                node = ReplaceNode(node, node->right, code_error);
+                node = ReplaceNode(num_of_nodes, node, node->right, code_error);
             }
             else if(CompareDoubles(node->right->data, 0.0) || CompareDoubles(node->left->data, 0.0)) {
-                node = ReplaceNode(node, _NUM(0.0), code_error);
+                node = ReplaceNode(num_of_nodes, node, _NUM(0.0), code_error);
             }
             break;
         }
         case DIV: {
-            if(CompareDoubles(node->left->data, 0.0)) {
-                node = ReplaceNode(node, _NUM(0.0), code_error);
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(node->left->data / node->right->data);
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
+            else if(CompareDoubles(node->left->data, 0.0)) {
+                node = ReplaceNode(num_of_nodes, node, _NUM(0.0), code_error);
             }
             else if(CompareDoubles(node->right->data, 1.0)) {
-                node = ReplaceNode(node, node->left, code_error);
+                node = ReplaceNode(num_of_nodes, node, node->left, code_error);
             }
             break;
         }
         case DEG: {
-            if(CompareDoubles(node->right->data, 1.0)) {
-                node = ReplaceNode(node, node->left, code_error);
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(pow(node->left->data, node->right->data));
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
+            else if(CompareDoubles(node->right->data, 1.0)) {
+                node = ReplaceNode(num_of_nodes, node, node->left, code_error);
             }
             else if(CompareDoubles(node->right->data, 0.0)) {
-                node = ReplaceNode(node, _NUM(1.0), code_error);
+                node = ReplaceNode(num_of_nodes, node, _NUM(1.0), code_error);
             }
             break;
+        }
+        case SIN: {
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(sin(node->left->data));
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
+            break;
+        }
+        case COS: {
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(cos(node->left->data));
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
+        }
+        case LN: {
+            if(node->left->type == NUM && node->right->type == NUM) {
+                new_node = _NUM(log(node->left->data));
+                FreeNode(num_of_nodes, node, code_error);
+                return new_node;
+            }
         }
         default: {
             break;
