@@ -1,6 +1,6 @@
 #include "input.hpp"
 
-#define SNTX_ERR fprintf(stderr, "syntax error: %c (line: %d)\n", buffer[*ip], __LINE__); \
+#define SNTX_ERR fprintf(stderr, "syntax error: %c (line: %d)\n", (char)tokens[*ip]->data, __LINE__); \
                  exit(0);
 
 void TokensParcing(Tree* tree, size_t* num_of_nodes, int* code_error) {
@@ -18,6 +18,10 @@ void TokensParcing(Tree* tree, size_t* num_of_nodes, int* code_error) {
 
         if(tree->data_base[data_base_ip] == '$') {
             tree->tokens[tokens_ip] = _EOT;
+            data_base_ip++;
+        }
+        else if(tree->data_base[data_base_ip] == 'x') {
+            tree->tokens[tokens_ip] = _VAR(tree->data_base[data_base_ip]);
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == '(') {
@@ -86,87 +90,73 @@ void TokensParcing(Tree* tree, size_t* num_of_nodes, int* code_error) {
     }
 }
 
-Node* GetTree(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+Node* GetTree(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
-    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    if(buffer[*ip] != '$') {SNTX_ERR}
+    if(tokens[*ip]->data != EOT) {SNTX_ERR}
     (*ip)++;
 
-    Node* val = GetAddAndSub(num_of_nodes, buffer, ip, code_error);
+    Node* val = GetAddAndSub(num_of_nodes, tokens, ip, code_error);
 
-    if(buffer[*ip] != '$') {SNTX_ERR}
+    if(tokens[*ip]->data != EOT) {SNTX_ERR}
     (*ip)++;
 
     return val;
 }
 
-Node* GetNum(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+Node* GetNum(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
-    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    double val = 0;
     size_t old_ip = *ip;
 
-    char* begin = buffer + *ip;
-
-    while(('0' <= buffer[*ip] && buffer[*ip] <= '9') || buffer[*ip] == '.') {
-        (*ip)++;
-    }
-
-    char old_sym = buffer[*ip];
-
-    buffer[(*ip)] = '\0';
-
-    val = strtod(begin, NULL);
-
-    buffer[*ip] = old_sym;
+    Node* ret_node = tokens[*ip];
+    if(tokens[*ip]->type == NUM) (*ip)++;
 
     if(old_ip == *ip) {SNTX_ERR}
 
-    return _NUM(val);
+    return ret_node;
 }
 
-Node* GetVar(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+Node* GetVar(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
-    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    char var = 0;
     size_t old_ip = *ip;
 
-    if(buffer[*ip] == X) {
-        var = X;
-        (*ip)++;
-    }
+    Node* ret_node = tokens[*ip];
+    if(tokens[*ip]->type == VAR) (*ip)++;
 
     if(old_ip == *ip) {SNTX_ERR}
 
-    return _VAR(var);
+    return ret_node;
 }
 
-Node* GetDeg(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+Node* GetDeg(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
-    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    Node* val = GetBrackets(num_of_nodes, buffer, ip, code_error);
+    Node* node = GetBrackets(num_of_nodes, tokens, ip, code_error);
 
-    while(buffer[*ip] == '^') {
-        char op = buffer[*ip];
+    while((Operations)tokens[*ip]->data == DEG) {
+        Operations op = (Operations)tokens[*ip]->data;
         (*ip)++;
 
-        Node* val2 = GetBrackets(num_of_nodes, buffer, ip, code_error);
+        Node* node_right = GetBrackets(num_of_nodes, tokens, ip, code_error);
+        Node* node_left  = node;
 
         switch(op) {
-            case '^': {
-                val = _DEG(val, val2);
+            case DEG: {
+                node = _DEG(node_left, node_right);
                 break;
             }
             default: {
@@ -175,31 +165,32 @@ Node* GetDeg(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
         }
     }
 
-    return val;
+    return node;
 
 }
 
-Node* GetAddAndSub(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+Node* GetAddAndSub(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
-    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    Node* val = GetMulAndDiv(num_of_nodes, buffer, ip, code_error);
+    Node* node = GetMulAndDiv(num_of_nodes, tokens, ip, code_error);
 
-    while(buffer[*ip] == '+' || buffer[*ip] == '-') {
-        char op = buffer[*ip];
+    while((Operations)tokens[*ip]->data == ADD || (Operations)tokens[*ip]->data == SUB) {
+        Operations op = (Operations)tokens[*ip]->data;
         (*ip)++;
 
-        Node* val2 = GetMulAndDiv(num_of_nodes, buffer, ip, code_error);
+        Node* right_node = GetMulAndDiv(num_of_nodes, tokens, ip, code_error);
+        Node* left_node  = node;
 
         switch(op) {
-            case '+': {
-                val = _ADD(val, val2);
+            case ADD: {
+                node = _ADD(left_node, right_node);
                 break;
             }
-            case '-': {
-                val = _SUB(val, val2);
+            case SUB: {
+                node = _SUB(left_node, right_node);
                 break;
             }
             default: {
@@ -208,30 +199,31 @@ Node* GetAddAndSub(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_err
         }
     }
 
-    return val;
+    return node;
 }
 
-Node* GetMulAndDiv(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+Node* GetMulAndDiv(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
-    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    Node* val = GetDeg(num_of_nodes, buffer, ip, code_error);
+    Node* node = GetDeg(num_of_nodes, tokens, ip, code_error);
 
-    while(buffer[*ip] == '*' || buffer[*ip] == '/') {
-        char op = buffer[*ip];
+    while((Operations)tokens[*ip]->data == MUL || (Operations)tokens[*ip]->data == DIV) {
+        Operations op = (Operations)tokens[*ip]->data;
         (*ip)++;
 
-        Node* val2 = GetDeg(num_of_nodes, buffer, ip, code_error);
+        Node* right_node = GetDeg(num_of_nodes, tokens, ip, code_error);
+        Node* left_node  = node;
 
         switch(op) {
-            case '*': {
-                val = _MUL(val, val2);
+            case MUL: {
+                node = _MUL(left_node, right_node);
                 break;
             }
-            case '/': {
-                val = _DIV(val, val2);
+            case DIV: {
+                node = _MUL(left_node, right_node);
                 break;
             }
             default: {
@@ -240,29 +232,29 @@ Node* GetMulAndDiv(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_err
         }
     }
 
-    return val;
+    return node;
 }
 
-Node* GetBrackets(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+Node* GetBrackets(size_t* num_of_nodes, Node** tokens, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
-    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(tokens       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    if(buffer[*ip] == '(') {
+    if((Operations)tokens[*ip]->data == L_BR) {
         (*ip)++;
-        Node* val = GetAddAndSub(num_of_nodes, buffer, ip, code_error);
+        Node* node = GetAddAndSub(num_of_nodes, tokens, ip, code_error);
 
-        if(buffer[*ip] != ')') {SNTX_ERR}
+        if((Operations)tokens[*ip]->data != R_BR) {SNTX_ERR}
 
         (*ip)++;
-        return val;
+        return node;
     }
-    else if(buffer[*ip] == X) {
-        return GetVar(num_of_nodes, buffer, ip, code_error);
+    else if(tokens[*ip]->type == VAR) {
+        return GetVar(num_of_nodes, tokens, ip, code_error);
     }
     else {
-        return GetNum(num_of_nodes, buffer, ip, code_error);
+        return GetNum(num_of_nodes, tokens, ip, code_error);
     }
 }
 

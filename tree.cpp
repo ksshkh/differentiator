@@ -134,8 +134,8 @@ void ReadTree(Tree* tree, int* code_error) {
 
     if(*(tree->data_base) == '$') {
         size_t ip = 0;
-        // tree->root = GetTree(&(tree->num_of_nodes), tree->data_base, &ip, code_error);
         TokensParcing(tree, &(tree->num_of_nodes), code_error);
+        tree->root = GetTree(&(tree->num_of_nodes), tree->tokens, &ip, code_error);
     }
     else {
         char* copy_data_base = tree->data_base;
