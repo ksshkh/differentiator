@@ -69,6 +69,35 @@ Node* GetVar(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
     return _VAR(var);
 }
 
+Node* GetDeg(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
+
+    MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
+    MY_ASSERT(buffer       != NULL, PTR_ERROR);
+    MY_ASSERT(ip           != NULL, PTR_ERROR);
+
+    Node* val = GetBrackets(num_of_nodes, buffer, ip, code_error);
+
+    while(buffer[*ip] == '^') {
+        double op = buffer[*ip];
+        (*ip)++;
+
+        Node* val2 = GetBrackets(num_of_nodes, buffer, ip, code_error);
+
+        switch((int)op) {
+            case '^': {
+                val = _DEG(val, val2);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    return val;
+
+}
+
 Node* GetAddAndSub(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_error) {
 
     MY_ASSERT(num_of_nodes != NULL, PTR_ERROR);
@@ -78,7 +107,7 @@ Node* GetAddAndSub(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_err
     Node* val = GetMulAndDiv(num_of_nodes, buffer, ip, code_error);
 
     while(buffer[*ip] == '+' || buffer[*ip] == '-') {
-        int op = buffer[*ip];
+        char op = buffer[*ip];
         (*ip)++;
 
         Node* val2 = GetMulAndDiv(num_of_nodes, buffer, ip, code_error);
@@ -107,15 +136,15 @@ Node* GetMulAndDiv(size_t* num_of_nodes, char* buffer, size_t* ip, int* code_err
     MY_ASSERT(buffer       != NULL, PTR_ERROR);
     MY_ASSERT(ip           != NULL, PTR_ERROR);
 
-    Node* val = GetBrackets(num_of_nodes, buffer, ip, code_error);
+    Node* val = GetDeg(num_of_nodes, buffer, ip, code_error);
 
     while(buffer[*ip] == '*' || buffer[*ip] == '/') {
-        double op = buffer[*ip];
+        char op = buffer[*ip];
         (*ip)++;
 
-        Node* val2 = GetBrackets(num_of_nodes, buffer, ip, code_error);
+        Node* val2 = GetDeg(num_of_nodes, buffer, ip, code_error);
 
-        switch((int)op) {
+        switch(op) {
             case '*': {
                 val = _MUL(val, val2);
                 break;
