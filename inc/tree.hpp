@@ -11,8 +11,6 @@
 #include "errors.hpp"
 #include "utils.hpp"
 
-static const char* INPUT_FILE = "./input.txt";
-
 #define DEBUG
 
 typedef double TreeElem;
@@ -61,11 +59,16 @@ struct Node {
     Node* parent = NULL;
 };
 
+struct Token {
+    Type type;
+    TreeElem value;
+};
+
 struct Tree {
     Node* root = NULL;
     size_t num_of_nodes = 0;
 
-    Node** tokens = NULL;
+    Token* tokens = NULL;
 
     char* data_base = 0;
     long int size_data_base = 0;

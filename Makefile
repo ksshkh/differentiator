@@ -7,9 +7,9 @@ CFLAGS = -c -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 	-Wnon-virtual-dtor -Woverloaded-virtual -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing   \
 	-Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG -D_EJUDGE_CLIENT_SIDE
 
-INCLUDES = ./tree.hpp ./errors.hpp ./utils.hpp ./treedump.hpp ./diff.hpp ./dsl.hpp ./input.hpp
+INCLUDES = ./inc/tree.hpp ./inc/errors.hpp ./inc/utils.hpp ./inc/treedump.hpp ./inc/diff.hpp ./inc/dsl.hpp ./inc/input.hpp
 
-SOURCES = ./main.cpp ./tree.cpp ./errors.cpp ./utils.cpp ./treedump.cpp ./diff.cpp ./input.cpp
+SOURCES = ./src/main.cpp ./src/tree.cpp ./src/errors.cpp ./src/utils.cpp ./src/treedump.cpp ./src/diff.cpp ./src/input.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -25,8 +25,5 @@ $(EXECUTABLE): $(OBJECTS)
 
 .PHONY: clean
 clean:
-	rm -rf *.o
+	rm -rf ./src/*.o
 	rm -rf diff
-	rm -rf ./debug/tree.dot
-	rm -rf ./debug/*.svg
-	rm -rf ./debug/*.html

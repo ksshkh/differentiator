@@ -1,0 +1,18 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\title {Study of the function, the value at a point and its Taylor expansion}
+\author{Khanevskaya Ksenia}
+\date{\today}
+\begin{document}
+\maketitle
+\[f^{(0)}(x)=\frac{\sin(5.00 \cdot x)+x^{4.00}}{6.00}\]
+Function value at a point $x=16.30$: \[f(16.30)=11765.17\]
+First differential before simplification:
+\[f^{(1)}(x)=\frac{(\cos(5.00 \cdot x) \cdot (0.00 \cdot x+5.00 \cdot 1.00)+4.00 \cdot x^{3.00} \cdot 1.00) \cdot 6.00-(\sin(5.00 \cdot x)+x^{4.00}) \cdot 0.00}{6.00^{2.00}}\]
+After simplification:
+\[f^{(1)}(x)=\frac{(\cos(5.00 \cdot x) \cdot 5.00+4.00 \cdot x^{3.00}) \cdot 6.00}{36.00}\]
+Taylor series expansion:
+\[f(x)=f^{(0)}(x)+\frac{1}{1!} \cdot f^{(1)}(x)+\frac{1}{2!} \cdot f^{(2)}(x) + o(x^{2})\]
+\[f^{(1)}(x)=\frac{(\cos(5.00 \cdot x) \cdot 5.00+4.00 \cdot x^{3.00}) \cdot 6.00}{36.00}\]
+\[f^{(2)}(x)=\frac{216.00 \cdot (-25.00 \cdot \sin(5.00 \cdot x)+12.00 \cdot x^{2.00})}{1296.00}\]
+\end{document}

@@ -1,5 +1,5 @@
-#include "treedump.hpp"
-#include "utils.hpp"
+#include "../inc/treedump.hpp"
+#include "../inc/utils.hpp"
 
 #define NODE_NUM_COLOR     "\"#FAAA82\""
 #define NODE_VAR_COLOR     "\"#A24892\""
@@ -10,7 +10,17 @@
 static const char* DOT_FILE_NAME       = "./debug/tree.dot";
 static const char* IMAGE_NAME          = "./debug/tree_image.svg";
 static const char* HTML_FILE_NAME      = "./debug/tree.html";
-static const char* TEX_FILE_NAME       = "./debug/tree.tex";
+static const char* TEX_FILE_NAME       = "./differentiator.tex";
+static const char* INPUT_FILE          = "./input.txt";
+
+#define PRINT_BRACKET(br) if(node->type == OP && node->parent && (Operations)node->parent->data != DIV) {                                                                                \
+                              if(((Operations)node->data == ADD || (Operations)node->data == SUB) && ((Operations)node->parent->data != ADD && (Operations)node->parent->data != SUB)) { \
+                                  fprintf(stream, "%c", br);                                                                                                                                  \
+                              }                                                                                                                                                          \
+                              else if((Operations)node->parent->data == DEG) {                                     \
+                                  fprintf(stream, "%c", br);                                                                                                                                  \
+                              }                                                                                                                                                          \
+                          }
 
 void DotTreeDump(Tree* tree, int* code_error) {
 
@@ -58,8 +68,33 @@ void PrintDotNode(Node* node, FILE* stream) {
             node, node, node->type, node->data, node->parent, node->left, node->right);
     }
     else if(node->type == OP) {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{indx: %p | type: %d | value: %c | parent: %p | { left: %p | right: %p}}\"];\n",
-            node, node, node->type, (int)node->data, node->parent, node->left, node->right);
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{", node);
+
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wswitch-enum"
+
+        switch((Operations)node->data) {
+            case COS: {
+                fprintf(stream, "cos");
+                break;
+            }
+            case SIN: {
+                fprintf(stream, "sin");
+                break;
+            }
+            case LN: {
+                fprintf(stream, "ln");
+                break;
+            }
+            default: {
+                fprintf(stream, "%c", (char)node->data);
+                break;
+            }
+        }
+
+        #pragma GCC diagnostic pop
+
+        fprintf(stream, "}\"];\n");
     }
     else {
         fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_VAR_COLOR ", label = \"{indx: %p | type: %d | value: %c | parent: %p | { left: %p | right: %p}}\"];\n",
@@ -112,61 +147,6 @@ void PrintTree(Tree* tree, int* code_error) {
     MY_ASSERT(fclose(printout) == 0, FCLOSE_ERROR);
 }
 
-void PreorderPrinting(Node* node, FILE* stream, int* code_error) {
-
-    MY_ASSERT(stream != NULL, FILE_ERROR);
-
-    if(!node) {
-        return;
-    }
-
-    fprintf(stream, "(");
-    if (node->type == NUM) {
-        fprintf(stream, " %.2lf ", node->data);
-    }
-    else {
-        switch((Operations)node->data) {
-            case SIN: {
-                fprintf(stream, " sin ");
-                break;
-            }
-            case COS: {
-                fprintf(stream, " cos ");
-                break;
-            }
-            case LN: {
-                fprintf(stream, " ln ");
-                break;
-            }
-            default: {
-                fprintf(stream, " %c ", (int)node->data);
-            }
-        }
-    }
-
-    PreorderPrinting(node->left, stream, code_error);
-    PreorderPrinting(node->right, stream, code_error);
-
-    fprintf(stream, ")");
-}
-
-void PostorderPrinting(Node* node, FILE* stream, int* code_error) {
-
-    MY_ASSERT(stream != NULL, FILE_ERROR);
-
-    if(!node) {
-        return;
-    }
-
-    fprintf(stream, "(");
-
-    PostorderPrinting(node->left, stream, code_error);
-    PostorderPrinting(node->right, stream, code_error);
-    fprintf(stream, " %lf ", node->data);
-
-    fprintf(stream, ")");
-}
-
 void InorderPrinting(Node* node, FILE* stream, int* code_error) {
 
     MY_ASSERT(stream != NULL, FILE_ERROR);
@@ -183,6 +163,9 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
         fprintf(stream, " %.2lf ", node->data);
     }
     else {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wswitch-enum"
+
         switch((Operations)node->data) {
             case SIN: {
                 fprintf(stream, " sin ");
@@ -200,6 +183,7 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
                 fprintf(stream, " %c ", (int)node->data);
             }
         }
+        #pragma GCC diagnostic pop
     }
 
     InorderPrinting(node->right, stream, code_error);
@@ -210,7 +194,7 @@ void InorderPrinting(Node* node, FILE* stream, int* code_error) {
 
 void PrintTexNode(Node* node, FILE* stream) {
 
-    if(node->type == OP && (Operations)node->data != DIV && (Operations)node->data != MUL && (Operations)node->data != DEG) fprintf(stream, "(");
+    PRINT_BRACKET(L_BR)
 
     if     ((int)node->data == DIV) fprintf(stream, "\\frac{");
     else if((int)node->data == SIN) fprintf(stream, "\\sin(");
@@ -233,16 +217,17 @@ void PrintTexNode(Node* node, FILE* stream) {
 
     if((int)node->data == DIV || (int)node->data == DEG) fprintf(stream, "}");
 
-    if(node->type == OP && (Operations)node->data != DIV && (Operations)node->data != MUL && (Operations)node->data != DEG) fprintf(stream, ")");
+    PRINT_BRACKET(R_BR)
 
 }
 
-void TexTreeDump(Tree* tree, int* code_error) {
+void TexTreeDump(Tree* tree, TreeElem var_value, int* code_error) {
 
     FILE* tex_file = fopen(TEX_FILE_NAME, "w");
 
     if(tex_file) {
         fprintf(tex_file, "\\documentclass[12pt, letterpaper]{article}\n");
+        fprintf(tex_file, "\\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}\n");
         fprintf(tex_file, "\\title {Study of the function, the value at a point and its Taylor expansion}\n");
         fprintf(tex_file, "\\author{Khanevskaya Ksenia}\n");
         fprintf(tex_file, "\\date{\\today}\n");
@@ -255,18 +240,40 @@ void TexTreeDump(Tree* tree, int* code_error) {
                 PrintTexNode(tree->root, tex_file);
 
                 fprintf(tex_file, "\\]\n");
-                fprintf(tex_file, "Function value at a point $x=%d$: \\[f(%d)=%.2lf\\]\n", X, X, CountTree(tree->root, code_error));
+                fprintf(tex_file, "Function value at a point $x=%.2lf$: \\[f(%.2lf)=%.2lf\\]\n", var_value, var_value, CountTree(tree->root, var_value, code_error));
 
+                fprintf(tex_file, "First differential before simplification:\n");
                 tree->root = DiffTree(&(tree->num_of_nodes), tree->root, code_error);
                 fprintf(tex_file, "\\[f^{(1)}(x)=");
                 PrintTexNode(tree->root, tex_file);
 
+                DotTreeDump(tree, code_error);
+
                 fprintf(tex_file, "\\]\n");
 
-                tree->root = SimplifyExpression(&(tree->num_of_nodes), tree->root, code_error);
+                fprintf(tex_file, "After simplification:\n");
+                SimplifyTree(tree, code_error);
                 fprintf(tex_file, "\\[f^{(1)}(x)=");
                 PrintTexNode(tree->root, tex_file);
 
+                DotTreeDump(tree, code_error);
+
+                fprintf(tex_file, "\\]\n");
+
+                fprintf(tex_file, "Taylor series expansion:\n");
+                fprintf(tex_file, "\\[f(x)=f^{(0)}(x)+\\frac{1}{1!} \\cdot f^{(1)}(x)+\\frac{1}{2!} \\cdot f^{(2)}(x) + o(x^{2})\\]\n");
+
+                fprintf(tex_file, "\\[f^{(1)}(x)=");
+                PrintTexNode(tree->root, tex_file);
+                fprintf(tex_file, "\\]\n");
+
+                tree->root = DiffTree(&(tree->num_of_nodes), tree->root, code_error);
+                SimplifyTree(tree, code_error);
+
+                DotTreeDump(tree, code_error);
+
+                fprintf(tex_file, "\\[f^{(2)}(x)=");
+                PrintTexNode(tree->root, tex_file);
                 fprintf(tex_file, "\\]\n");
             }
             else {
@@ -290,3 +297,4 @@ void TexTreeDump(Tree* tree, int* code_error) {
 #undef NODE_NUM_COLOR
 #undef NODE_BORDER_COLOR
 #undef BACKGROUND_COLOR
+#undef PRINT_BRACKET

@@ -1,7 +1,9 @@
-#include "tree.hpp"
-#include "utils.hpp"
-#include "treedump.hpp"
-#include "input.hpp"
+#include "../inc/tree.hpp"
+#include "../inc/utils.hpp"
+#include "../inc/treedump.hpp"
+#include "../inc/input.hpp"
+
+static const char* INPUT_FILE = "./input.txt";
 
 #define OP_CHECK(data)  data == ADD || data == SUB || data == MUL || data == DIV || data == DEG || !strncmp(&data, "sin", 3) || !strncmp(&data, "cos", 3) || !strncmp(&data, "ln", 2)
 #define VAR_CHECK(data) data == X
@@ -16,7 +18,7 @@ void TreeCtor(Tree* tree, int* code_error) {
     tree->data_base = ReadInBuff(INPUT_FILE, &(tree->size_data_base), code_error);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
 
-    tree->tokens = (Node**)calloc(tree->size_data_base, sizeof(Node*));
+    tree->tokens = (Token*)calloc(tree->size_data_base, sizeof(Token));
     MY_ASSERT(tree->tokens != NULL, PTR_ERROR);
 }
 
@@ -122,7 +124,6 @@ void FreeNode(size_t* num_of_nodes, Node* node, int* code_error) {
 
     FreeNode(num_of_nodes, node->left, code_error);
     FreeNode(num_of_nodes, node->right, code_error);
-    free(node);
 
     (*num_of_nodes)--;
 }
@@ -132,9 +133,9 @@ void ReadTree(Tree* tree, int* code_error) {
     MY_ASSERT(tree != NULL, PTR_ERROR);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
 
-    if(*(tree->data_base) == '$') {
+    if(*(tree->data_base + tree->size_data_base - 1) == '$') {
         size_t ip = 0;
-        TokensParcing(tree, &(tree->num_of_nodes), code_error);
+        TokensParcing(tree, code_error);
         tree->root = GetTree(&(tree->num_of_nodes), tree->tokens, &ip, code_error);
     }
     else {

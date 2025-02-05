@@ -17,6 +17,10 @@
 #define _COS(left)        NodeCtor(num_of_nodes, OP,  COS, left, _NUM(0.0), NULL, code_error)
 #define _LN(left)         NodeCtor(num_of_nodes, OP,  LN,  left, _NUM(0.0), NULL, code_error)
 
+#define _DIFF(node)         DiffTree(num_of_nodes, node, code_error)
+#define _COPY(node, parent) CopyTree(num_of_nodes, node,  parent, code_error)
+#define _FREE(node)         FreeNode(num_of_nodes, node, code_error)
+
 #define UNARY_CHECK(data) data == SIN || data == COS || data == LN
 
 #endif // DSL_HPP

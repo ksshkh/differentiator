@@ -1,4 +1,4 @@
-#include "errors.hpp"
+#include "../inc/errors.hpp"
 
 static const char* errors_names[] = {"NO_ERROR",
                                      "PTR_ERROR",
