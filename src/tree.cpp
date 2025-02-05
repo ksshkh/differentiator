@@ -133,19 +133,10 @@ void ReadTree(Tree* tree, int* code_error) {
     MY_ASSERT(tree != NULL, PTR_ERROR);
     MY_ASSERT(tree->data_base != NULL, PTR_ERROR);
 
-    if(*(tree->data_base + tree->size_data_base - 1) == '$') {
-        size_t ip = 0;
-        TokensParcing(tree, code_error);
-        tree->root = GetTree(&(tree->num_of_nodes), tree->tokens, &ip, code_error);
-    }
-    else {
-        char* copy_data_base = tree->data_base;
+    size_t ip = 0;
 
-        tree->root = ReadNode(tree, tree->root, NULL, code_error);
-
-        tree->data_base = copy_data_base;
-    }
-
+    TokensParcing(tree, code_error);
+    tree->root = GetTree(&(tree->num_of_nodes), tree->tokens, &ip, code_error);
 }
 
 Node* ReadNode(Tree* tree, Node* node, Node* parent, int* code_error) {

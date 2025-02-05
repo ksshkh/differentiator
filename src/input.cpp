@@ -16,48 +16,43 @@ void TokensParcing(Tree* tree, int* code_error) {
             data_base_ip++;
         }
 
-        if(tree->data_base[data_base_ip] == '$') {
-            tree->tokens[tokens_ip].type = OP;
-            tree->tokens[tokens_ip].value = EOT;
-            data_base_ip++;
-        }
-        else if(tree->data_base[data_base_ip] == 'x') {
-            tree->tokens[tokens_ip].type = VAR;
+        if(tree->data_base[data_base_ip] == 'x') {
+            tree->tokens[tokens_ip].type  = VAR;
             tree->tokens[tokens_ip].value = tree->data_base[data_base_ip];
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == '(') {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = L_BR;
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == ')') {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = R_BR;
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == '+') {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = ADD;
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == '-') {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = SUB;
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == '*') {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = MUL;
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == '/') {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = DIV;
             data_base_ip++;
         }
         else if(tree->data_base[data_base_ip] == '^') {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = DEG;
             data_base_ip++;
         }
@@ -78,26 +73,28 @@ void TokensParcing(Tree* tree, int* code_error) {
 
             tree->data_base[data_base_ip] = old_sym;
 
-            tree->tokens[tokens_ip].type = NUM;
+            tree->tokens[tokens_ip].type  = NUM;
             tree->tokens[tokens_ip].value = num;
         }
         else if(!strncmp(tree->data_base + data_base_ip, "sin", 3)) {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = SIN;
             data_base_ip += 3;
         }
         else if(!strncmp(tree->data_base + data_base_ip, "cos", 3)) {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = COS;
             data_base_ip += 3;
         }
         else if(!strncmp(tree->data_base + data_base_ip, "ln", 2)) {
-            tree->tokens[tokens_ip].type = OP;
+            tree->tokens[tokens_ip].type  = OP;
             tree->tokens[tokens_ip].value = LN;
             data_base_ip += 3;
         }
     }
 
+    tree->tokens[tokens_ip].type  = OP;
+    tree->tokens[tokens_ip].value = EOT;
 }
 
 Node* GetTree(size_t* num_of_nodes, Token* tokens, size_t* ip, int* code_error) {
