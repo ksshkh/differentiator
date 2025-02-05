@@ -68,7 +68,7 @@ void PrintDotNode(Node* node, FILE* stream) {
             node, node, node->type, node->data, node->parent, node->left, node->right);
     }
     else if(node->type == OP) {
-        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{", node);
+        fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_OP_COLOR ", label = \"{indx: %p | type: %d | value: ", node, node, node->type);
 
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wswitch-enum"
@@ -94,7 +94,7 @@ void PrintDotNode(Node* node, FILE* stream) {
 
         #pragma GCC diagnostic pop
 
-        fprintf(stream, "}\"];\n");
+        fprintf(stream, " | parent: %p | { left: %p | right: %p}}\"];\n", node->parent, node->left, node->right);
     }
     else {
         fprintf(stream, "\tnode%p [color = " NODE_BORDER_COLOR ", shape = Mrecord, style = filled, fillcolor = " NODE_VAR_COLOR ", label = \"{indx: %p | type: %d | value: %c | parent: %p | { left: %p | right: %p}}\"];\n",

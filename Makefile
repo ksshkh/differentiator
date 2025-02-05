@@ -27,3 +27,6 @@ $(EXECUTABLE): $(OBJECTS)
 clean:
 	rm -rf ./src/*.o
 	rm -rf diff
+	rm -rf ./debug/tree.dot
+	rm -rf ./debug/*.svg
+	rm -rf ./debug/*.html

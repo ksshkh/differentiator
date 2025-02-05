@@ -184,6 +184,7 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case ADD: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(node->left->data + node->right->data);
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
@@ -198,6 +199,7 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case SUB: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(node->left->data - node->right->data);
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
@@ -212,26 +214,31 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case MUL: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(node->left->data * node->right->data);
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
             else if(node->left->type == NUM && (Operations)node->right->data == MUL && node->right->left->type == NUM) {
                 new_node = _MUL(_NUM(node->left->data * node->right->left->data), _COPY(node->right->right, node->right));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
             else if(node->left->type == NUM && (Operations)node->right->data == MUL && node->right->right->type == NUM) {
                 new_node = _MUL(_NUM(node->left->data * node->right->right->data), _COPY(node->right->left, node->right));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
             else if(node->right->type == NUM && (Operations)node->left->data == MUL && node->left->left->type == NUM) {
                 new_node = _MUL(_NUM(node->right->data * node->left->left->data), _COPY(node->left->right, node->left));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
             else if(node->right->type == NUM && (Operations)node->left->data == MUL && node->left->right->type == NUM) {
                 new_node = _MUL(_NUM(node->right->data * node->left->right->data), _COPY(node->left->left, node->left));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
@@ -249,6 +256,7 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case DIV: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(node->left->data / node->right->data);
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
@@ -263,6 +271,7 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case DEG: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(pow(node->left->data, node->right->data));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
@@ -277,6 +286,7 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case SIN: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(sin(node->left->data));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
@@ -285,6 +295,7 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case COS: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(cos(node->left->data));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
@@ -293,6 +304,7 @@ Node* SimplifyExpression(size_t* num_of_nodes, Node* node, int* code_error) {
         case LN: {
             if(node->left->type == NUM && node->right->type == NUM) {
                 new_node = _NUM(log(node->left->data));
+                new_node->parent = node->parent;
                 _FREE(node);
                 return new_node;
             }
